@@ -76,6 +76,18 @@ In the same Firebase/Google Cloud project, obtain the OAuth client ID of type **
 
 Google sign-in uses the native account picker, then exchanges the Google ID token for a Firebase credential. Email and password sign-in uses Firebase directly. The Firebase project values in `.env` are required for either method. `google-services.json` is not consumed by this app's Firebase JavaScript SDK; never put service account JSON in the mobile app.
 
+## Android APK releases (GitHub Actions)
+
+`.github/workflows/android-release.yml` builds a release APK on GitHub's servers:
+
+- Every pull request: builds the APK and attaches it to the workflow run as the `got-you-covered-apk` artifact.
+- Actions tab → Android Release → Run workflow: publishes/updates a `latest` pre-release on the Releases page.
+- Pushing a `v*` tag (e.g. `v1.0.0`): publishes a versioned release.
+
+The APK is signed with the committed `android/app/debug.keystore`, so it can be sideloaded but not uploaded to the Play Store. Only ARM ABIs (`arm64-v8a`, `armeabi-v7a`) are built, which covers real phones but not x86 emulators.
+
+The workflow writes `.env` from these repository secrets (Settings → Secrets and variables → Actions), matching `.env.example`: `FIREBASE_API_KEY`, `FIREBASE_AUTH_DOMAIN`, `FIREBASE_PROJECT_ID`, `FIREBASE_STORAGE_BUCKET`, `FIREBASE_MESSAGING_SENDER_ID`, `FIREBASE_APP_ID`, `GOOGLE_WEB_CLIENT_ID`. Without them the APK still builds, but Firebase features won't work. Google Sign-In also requires the SHA-1 of `android/app/debug.keystore` (`gradlew signingReport`) to be registered in Firebase.
+
 ## Checks
 
 ```powershell
