@@ -1,18 +1,17 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, Alert, ScrollView } from 'react-native';
-import LinearGradient from 'react-native-linear-gradient';
 import AppIcon, { AppIconName } from '../../components/AppIcon';
 import Avatar from '../../components/Avatar';
 import Button from '../../components/Button';
 import GycLoader from '../../components/GycLoader';
-import BambooTexture from '../../components/brand/BambooTexture';
+import MeghalayaSky from '../../components/brand/MeghalayaSky';
 import GycLogo from '../../components/brand/GycLogo';
 import KhasiWeave from '../../components/brand/KhasiWeave';
 import Card from '../../components/ui/Card';
 import Chip from '../../components/ui/Chip';
 import TextField from '../../components/ui/TextField';
 import { categoryStyle } from '../../constants/Categories';
-import { Colors, Gradients } from '../../constants/Colors';
+import { Colors } from '../../constants/Colors';
 import { Spacing } from '../../constants/Spacing';
 import { Fonts } from '../../constants/Typography';
 import { zoneForPoint } from '../../data/meghalayaZones';
@@ -105,10 +104,10 @@ export default function ProviderDetailScreen({ route, navigation }: Props) {
   return (
     <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
       <View style={styles.hero}>
-        <LinearGradient colors={[...Gradients.brand]} start={{ x: 0, y: 1 }} end={{ x: 1, y: 0 }} style={styles.banner}>
-          <BambooTexture color={Colors.white} opacity={0.16} />
+        <View style={styles.banner}>
+          <MeghalayaSky animated={false} style={styles.bannerSky} />
           <KhasiWeave height={8} color={Colors.white} opacity={0.45} bordered={false} style={styles.bannerWeave} />
-        </LinearGradient>
+        </View>
         <View style={styles.heroBody}>
           <View style={[styles.avatarRing, { borderColor: primary.color }]}>
             <Avatar name={name} photoURL={ownerProfile?.photoURL} size={AVATAR} />
@@ -219,7 +218,8 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 8 },
     elevation: 3,
   },
-  banner: { height: 80 },
+  banner: { height: 80, overflow: 'hidden' },
+  bannerSky: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 },
   bannerWeave: { position: 'absolute', bottom: 8, left: 0, right: 0 },
   heroBody: { alignItems: 'center', paddingHorizontal: Spacing.md, paddingBottom: Spacing.md },
   avatarRing: {

@@ -50,6 +50,8 @@ function Button({
     Animated.spring(scale, { toValue: 1, useNativeDriver: true, speed: 20, bounciness: 9 }).start();
   };
 
+  // Forward-pointing icons read as "go" and belong after the label.
+  const trailing = icon === 'arrowRight';
   const onLight = variant === 'outline' || variant === 'ghost';
   const contentColor = onLight ? (variant === 'ghost' ? Colors.textLight : Colors.text) : Colors.white;
   const pad = size === 'sm' ? styles.padSm : styles.padMd;
@@ -60,11 +62,18 @@ function Button({
         <ActivityIndicator color={contentColor} size="small" />
       ) : (
         <>
-          {icon ? <AppIcon name={icon} size={size === 'sm' ? 16 : 18} color={contentColor} /> : null}
+          {icon && !trailing ? <AppIcon name={icon} size={size === 'sm' ? 16 : 18} color={contentColor} /> : null}
           <Text
-            style={[styles.text, size === 'sm' && styles.textSm, { color: contentColor }, icon ? styles.textWithIcon : null, textStyle]}>
+            style={[
+              styles.text,
+              size === 'sm' && styles.textSm,
+              { color: contentColor },
+              icon ? (trailing ? styles.textBeforeIcon : styles.textWithIcon) : null,
+              textStyle,
+            ]}>
             {title}
           </Text>
+          {icon && trailing ? <AppIcon name={icon} size={size === 'sm' ? 16 : 18} color={contentColor} /> : null}
         </>
       )}
     </View>
@@ -136,6 +145,7 @@ const styles = StyleSheet.create({
   },
   textSm: { fontSize: 13.5 },
   textWithIcon: { marginLeft: 8 },
+  textBeforeIcon: { marginRight: 8 },
 });
 
 export default Button;

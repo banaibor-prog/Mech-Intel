@@ -1,47 +1,76 @@
 import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
-import AppIcon from '../AppIcon';
-import BambooTexture from '../brand/BambooTexture';
-import { Colors, Gradients } from '../../constants/Colors';
+import AppIcon, { AppIconName } from '../AppIcon';
+import { Colors } from '../../constants/Colors';
 import { Fonts } from '../../constants/Typography';
 import { Spacing } from '../../constants/Spacing';
 
-export default function QuickActions({ onPostJob, onOfferService }: { onPostJob: () => void; onOfferService: () => void }) {
+interface Props {
+  onPostJob: () => void;
+  onFindPros: () => void;
+  onOpenMap: () => void;
+  onOfferService: () => void;
+}
+
+const ACTIONS: { key: keyof Props; label: string; icon: AppIconName; colors: [string, string] }[] = [
+  { key: 'onPostJob', label: 'Post a job', icon: 'plus', colors: ['#3B82F6', '#7C3AED'] },
+  { key: 'onFindPros', label: 'Find pros', icon: 'users', colors: ['#06B6D4', '#3B82F6'] },
+  { key: 'onOpenMap', label: 'Live map', icon: 'map', colors: ['#10B981', '#0EA5E9'] },
+  { key: 'onOfferService', label: 'Offer work', icon: 'briefcase', colors: ['#D9A55B', '#B07A3A'] },
+];
+
+/** A single dock of the four things people come to Home to do. */
+export default function QuickActions(props: Props) {
   return (
-    <View style={styles.row}>
-      <TouchableOpacity accessibilityRole="button" style={styles.flex} onPress={onPostJob} activeOpacity={0.88}>
-        <LinearGradient colors={[...Gradients.brand]} start={{ x: 0, y: 1 }} end={{ x: 1, y: 0 }} style={styles.tile}>
-          <View style={styles.iconOnDark}>
-            <AppIcon name="plus" size={20} color={Colors.white} />
-          </View>
-          <Text style={styles.titleOnDark}>Post a job</Text>
-          <Text style={styles.subOnDark}>Get help from pros nearby</Text>
-        </LinearGradient>
-      </TouchableOpacity>
-      <TouchableOpacity accessibilityRole="button" style={styles.flex} onPress={onOfferService} activeOpacity={0.88}>
-        <View style={[styles.tile, styles.light]}>
-          <BambooTexture opacity={0.16} />
-          <View style={styles.iconOnLight}>
-            <AppIcon name="briefcase" size={19} color={Colors.bamboo} />
-          </View>
-          <Text style={styles.title}>Offer a service</Text>
-          <Text style={styles.sub}>Earn from work in your area</Text>
-        </View>
-      </TouchableOpacity>
+    <View style={styles.dock}>
+      {ACTIONS.map((action) => (
+        <TouchableOpacity
+          key={action.key}
+          accessibilityRole="button"
+          accessibilityLabel={action.label}
+          style={styles.item}
+          onPress={props[action.key]}
+          activeOpacity={0.8}>
+          <LinearGradient colors={action.colors} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.icon}>
+            <AppIcon name={action.icon} size={22} color={Colors.white} />
+          </LinearGradient>
+          <Text style={styles.label}>{action.label}</Text>
+        </TouchableOpacity>
+      ))}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  row: { flexDirection: 'row', gap: 10, paddingHorizontal: Spacing.md, paddingTop: 4 },
-  flex: { flex: 1 },
-  tile: { borderRadius: 22, padding: 14, minHeight: 112, overflow: 'hidden' },
-  light: { backgroundColor: Colors.surface, borderWidth: 1, borderColor: Colors.border },
-  iconOnDark: { width: 36, height: 36, borderRadius: 12, backgroundColor: 'rgba(255,255,255,0.22)', alignItems: 'center', justifyContent: 'center' },
-  iconOnLight: { width: 36, height: 36, borderRadius: 12, backgroundColor: Colors.bambooSoft, alignItems: 'center', justifyContent: 'center' },
-  titleOnDark: { color: Colors.white, fontFamily: Fonts.display, fontSize: 16, marginTop: 12 },
-  subOnDark: { color: 'rgba(255,255,255,0.82)', fontFamily: Fonts.body, fontSize: 11.5, marginTop: 2 },
-  title: { color: Colors.text, fontFamily: Fonts.display, fontSize: 16, marginTop: 12 },
-  sub: { color: Colors.textLight, fontFamily: Fonts.body, fontSize: 11.5, marginTop: 2 },
+  dock: {
+    flexDirection: 'row',
+    marginHorizontal: Spacing.md,
+    marginTop: 18,
+    paddingVertical: 16,
+    paddingHorizontal: 6,
+    backgroundColor: Colors.surface,
+    borderRadius: 24,
+    borderWidth: 1,
+    borderColor: '#EDF1F7',
+    shadowColor: '#1E3A8A',
+    shadowOpacity: 0.07,
+    shadowRadius: 18,
+    shadowOffset: { width: 0, height: 8 },
+    elevation: 3,
+  },
+  item: { flex: 1, alignItems: 'center' },
+  icon: {
+    width: 54,
+    height: 54,
+    borderRadius: 19,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#1E3A8A',
+    shadowOpacity: 0.18,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 5 },
+    elevation: 3,
+  },
+  label: { color: Colors.text, fontFamily: Fonts.bodySemibold, fontSize: 12, marginTop: 8 },
 });

@@ -9,9 +9,6 @@ export interface MockPost {
 const now = Date.now();
 const hour = 60 * 60 * 1000;
 
-function photosFor(seed: string, count: number): string[] {
-  return Array.from({ length: count }, (_, i) => `https://picsum.photos/seed/${seed}-${i}/800/1400`);
-}
 
 function avatarFor(seed: number): string {
   return `https://i.pravatar.cc/300?img=${seed}`;
@@ -30,7 +27,6 @@ export const MOCK_POSTS: MockPost[] = [
       budget: 400,
       location: 'Laitumkhrah, Shillong',
       coords: { lat: 25.5711, lng: 91.9015 },
-      photoURLs: photosFor('electrician-job', 2),
       likeCount: 12,
       applicantCount: 3,
       createdAt: now - 2 * hour,
@@ -48,7 +44,6 @@ export const MOCK_POSTS: MockPost[] = [
       budget: 1500,
       location: 'Nongthymmai, Shillong',
       coords: { lat: 25.5816, lng: 91.9069 },
-      photoURLs: photosFor('cleaning-job', 3),
       likeCount: 8,
       applicantCount: 5,
       createdAt: now - 5 * hour,
@@ -66,7 +61,6 @@ export const MOCK_POSTS: MockPost[] = [
       budget: 6000,
       location: 'Police Bazar, Shillong',
       coords: { lat: 25.5738, lng: 91.8852 },
-      photoURLs: photosFor('wedding-music', 1),
       likeCount: 34,
       applicantCount: 7,
       createdAt: now - 8 * hour,
@@ -84,7 +78,6 @@ export const MOCK_POSTS: MockPost[] = [
       budget: 350,
       location: 'Mawlai, Shillong',
       coords: { lat: 25.5945, lng: 91.8849 },
-      photoURLs: photosFor('plumbing-job', 2),
       likeCount: 5,
       applicantCount: 2,
       createdAt: now - 12 * hour,
@@ -102,7 +95,6 @@ export const MOCK_POSTS: MockPost[] = [
       budget: 8000,
       location: 'Laban, Shillong',
       coords: { lat: 25.5601, lng: 91.8794 },
-      photoURLs: photosFor('cafe-brand', 3),
       likeCount: 21,
       applicantCount: 9,
       createdAt: now - 18 * hour,
@@ -120,7 +112,6 @@ export const MOCK_POSTS: MockPost[] = [
       budget: 800,
       location: 'Rynjah, Shillong',
       coords: { lat: 25.5616, lng: 91.9168 },
-      photoURLs: photosFor('moving-job', 2),
       likeCount: 3,
       applicantCount: 4,
       createdAt: now - 24 * hour,
@@ -138,7 +129,6 @@ export const MOCK_POSTS: MockPost[] = [
       budget: 3500,
       location: 'Laitumkhrah, Shillong',
       coords: { lat: 25.571, lng: 91.8958 },
-      photoURLs: photosFor('birthday-catering', 2),
       likeCount: 17,
       applicantCount: 6,
       createdAt: now - 30 * hour,
@@ -156,7 +146,6 @@ export const MOCK_POSTS: MockPost[] = [
       budget: 12000,
       location: 'Upper Shillong',
       coords: { lat: 25.5445, lng: 91.859 },
-      photoURLs: photosFor('bookshelf-job', 2),
       likeCount: 26,
       applicantCount: 5,
       createdAt: now - 36 * hour,
@@ -192,7 +181,6 @@ export const MOCK_POSTS: MockPost[] = [
       budget: 5000,
       location: 'Sohra',
       coords: { lat: 25.2597, lng: 91.7411 },
-      photoURLs: photosFor('terrace-garden', 3),
       likeCount: 14,
       applicantCount: 4,
       createdAt: now - 48 * hour,
@@ -210,7 +198,6 @@ export const MOCK_POSTS: MockPost[] = [
       budget: 6000,
       location: 'Police Bazar, Shillong',
       coords: { lat: 25.5802, lng: 91.8839 },
-      photoURLs: photosFor('jewelry-photography', 3),
       likeCount: 41,
       applicantCount: 11,
       createdAt: now - 54 * hour,
@@ -228,7 +215,6 @@ export const MOCK_POSTS: MockPost[] = [
       budget: 900,
       location: 'Jowai',
       coords: { lat: 25.4464, lng: 92.2286 },
-      photoURLs: photosFor('ac-service', 1),
       likeCount: 6,
       applicantCount: 2,
       createdAt: now - 60 * hour,
@@ -264,7 +250,6 @@ export const MOCK_POSTS: MockPost[] = [
       budget: 15000,
       location: 'Mawlai, Shillong',
       coords: { lat: 25.5974, lng: 91.8814 },
-      photoURLs: photosFor('flat-repainting', 3),
       likeCount: 19,
       applicantCount: 8,
       createdAt: now - 72 * hour,

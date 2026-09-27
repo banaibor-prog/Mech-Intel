@@ -43,70 +43,87 @@ export default function JobCard({ post, saved, onSave, onOpen, onApply, onAuthor
     ]).start();
   }, [saved, saveScale]);
 
+  const place = post.location?.split(',')[0];
+  const photos = post.photoURLs ?? [];
   return (
     <View style={styles.card}>
-      <View style={[styles.band, { backgroundColor: cat.soft }]}>
-        <View style={[styles.catIcon, { backgroundColor: cat.color }]}>
-          <AppIcon name={cat.icon} size={14} color={Colors.white} />
-        </View>
-        <Text style={[styles.catText, { color: cat.color }]}>{post.skill}</Text>
-        {urgent ? (
-          <View style={styles.urgentChip}>
-            <AppIcon name="fire" size={12} color={Colors.error} filled />
-            <Text style={styles.urgentText}>Needed today</Text>
+      <TouchableOpacity accessibilityRole="button" onPress={onOpen} activeOpacity={0.88}>
+        <View style={styles.header}>
+          <View style={[styles.catIcon, { backgroundColor: cat.soft }]}>
+            <AppIcon name={cat.icon} size={18} color={cat.color} />
           </View>
-        ) : null}
-        <View style={styles.flex} />
-        <Text style={styles.posted}>{timeAgo(post.createdAt)}</Text>
-      </View>
-
-      <View style={styles.body}>
-        <TouchableOpacity accessibilityRole="button" onPress={onOpen} activeOpacity={0.82}>
-          <View style={styles.previewRow}>
-            <View style={styles.flex}>
-              <Text style={styles.title}>{post.title}</Text>
-              <Text style={styles.description} numberOfLines={2}>
-                {post.description}
-              </Text>
-            </View>
-            {post.photoURLs?.[0] ? <Image source={{ uri: post.photoURLs[0] }} style={styles.thumbnail} resizeMode="cover" /> : null}
+          <View style={styles.flex}>
+            <Text style={[styles.catText, { color: cat.color }]}>{post.skill}</Text>
+            <Text style={styles.posted}>
+              {timeAgo(post.createdAt)}
+              {place ? ` · ${place}` : ''}
+            </Text>
           </View>
-        </TouchableOpacity>
-
-        <View style={styles.infoRow}>
-          <View style={styles.budget}>
-            <Text style={styles.budgetLabel}>BUDGET</Text>
-            <Text style={styles.budgetValue}>{post.budget ? `₹${post.budget.toLocaleString('en-IN')}` : 'Quote'}</Text>
-          </View>
-          {post.location ? (
-            <View style={styles.meta}>
-              <AppIcon name="location" size={14} color={Colors.textMuted} />
-              <Text style={styles.metaText} numberOfLines={1}>
-                {post.location.split(',')[0]}
-              </Text>
+          {urgent ? (
+            <View style={styles.urgentChip}>
+              <AppIcon name="fire" size={12} color="#E11D48" filled />
+              <Text style={styles.urgentText}>Today</Text>
             </View>
           ) : null}
-          <Text style={styles.activityText}>{post.applicantCount} applied</Text>
-        </View>
-
-        <View style={styles.authorRow}>
-          <TouchableOpacity accessibilityRole="button" accessibilityLabel={`Open ${post.authorName}'s profile`} style={styles.authorButton} onPress={onAuthor}>
-            <Avatar name={post.authorName} photoURL={post.authorPhotoURL} size={34} />
-            <View style={styles.authorCopy}>
-              <Text style={styles.authorName} numberOfLines={1}>
-                {post.authorName}
-              </Text>
-              <TrustBadge score={post.authorTrustScore} />
-            </View>
-          </TouchableOpacity>
           <Animated.View style={{ transform: [{ scale: saveScale }] }}>
-            <TouchableOpacity accessibilityRole="button" accessibilityLabel={saved ? 'Remove saved job' : 'Save job'} style={styles.saveButton} onPress={onSave}>
-              <AppIcon name="bookmark" size={19} color={saved ? Colors.accent : Colors.textLight} filled={saved} />
+            <TouchableOpacity
+              accessibilityRole="button"
+              accessibilityLabel={saved ? 'Remove saved job' : 'Save job'}
+              style={styles.saveButton}
+              onPress={onSave}
+              hitSlop={6}>
+              <AppIcon name="bookmark" size={17} color={saved ? Colors.accent : Colors.textMuted} filled={saved} />
             </TouchableOpacity>
           </Animated.View>
-          <Button title={urgent ? 'Respond' : 'Apply'} size="sm" icon="arrowRight" onPress={onApply} style={styles.apply} />
         </View>
+
+        <Text style={styles.title}>{post.title}</Text>
+        <Text style={styles.description} numberOfLines={2}>
+          {post.description}
+        </Text>
+
+        {photos.length ? (
+          <View style={styles.photoRow}>
+            {photos.slice(0, 3).map((uri, i) => (
+              <View key={uri} style={styles.photoWrap}>
+                <Image source={{ uri }} style={styles.photo} resizeMode="cover" />
+                {i === 2 && photos.length > 3 ? (
+                  <View style={styles.photoMore}>
+                    <Text style={styles.photoMoreText}>+{photos.length - 3}</Text>
+                  </View>
+                ) : null}
+              </View>
+            ))}
+          </View>
+        ) : null}
+      </TouchableOpacity>
+
+      <View style={styles.infoRow}>
+        <View>
+          <Text style={styles.budgetValue}>{post.budget ? `₹${post.budget.toLocaleString('en-IN')}` : 'Open quote'}</Text>
+          <Text style={styles.budgetLabel}>budget</Text>
+        </View>
+        <View style={styles.infoDivider} />
+        <View>
+          <Text style={styles.infoValue}>{post.applicantCount}</Text>
+          <Text style={styles.budgetLabel}>applied</Text>
+        </View>
+        <View style={styles.flex} />
+        <Button title={urgent ? 'Respond' : 'Apply'} size="sm" icon="arrowRight" onPress={onApply} style={styles.apply} />
       </View>
+
+      <TouchableOpacity
+        accessibilityRole="button"
+        accessibilityLabel={`Open ${post.authorName}'s profile`}
+        style={styles.authorRow}
+        onPress={onAuthor}
+        activeOpacity={0.8}>
+        <Avatar name={post.authorName} photoURL={post.authorPhotoURL} size={26} />
+        <Text style={styles.authorName} numberOfLines={1}>
+          {post.authorName}
+        </Text>
+        <TrustBadge score={post.authorTrustScore} />
+      </TouchableOpacity>
     </View>
   );
 }
@@ -117,38 +134,44 @@ const styles = StyleSheet.create({
     marginHorizontal: Spacing.md,
     marginBottom: 14,
     backgroundColor: Colors.surface,
-    borderRadius: 22,
+    borderRadius: 26,
+    padding: 16,
     borderWidth: 1,
-    borderColor: Colors.border,
-    overflow: 'hidden',
+    borderColor: '#EDF1F7',
     shadowColor: '#1E3A8A',
-    shadowOpacity: 0.06,
-    shadowRadius: 14,
-    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.07,
+    shadowRadius: 16,
+    shadowOffset: { width: 0, height: 8 },
     elevation: 2,
   },
-  band: { flexDirection: 'row', alignItems: 'center', gap: 7, paddingHorizontal: 14, paddingVertical: 9 },
-  catIcon: { width: 24, height: 24, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
+  header: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+  catIcon: { width: 40, height: 40, borderRadius: 14, alignItems: 'center', justifyContent: 'center' },
   catText: { fontFamily: Fonts.bodyBold, fontSize: 12.5 },
-  urgentChip: { flexDirection: 'row', alignItems: 'center', gap: 3, backgroundColor: Colors.surface, borderRadius: 999, paddingHorizontal: 8, paddingVertical: 3 },
-  urgentText: { color: Colors.error, fontFamily: Fonts.bodyBold, fontSize: 10.5 },
-  posted: { color: Colors.textLight, fontFamily: Fonts.bodyMedium, fontSize: 11 },
-  body: { padding: 14, paddingTop: 12 },
-  previewRow: { flexDirection: 'row', alignItems: 'flex-start', gap: 12 },
-  title: { color: Colors.text, fontFamily: Fonts.display, fontSize: 18, lineHeight: 24, letterSpacing: -0.2 },
-  description: { color: Colors.textLight, fontFamily: Fonts.body, fontSize: 13.5, lineHeight: 19, marginTop: 5 },
-  thumbnail: { width: 74, height: 74, borderRadius: 16, backgroundColor: Colors.surfaceAlt },
-  infoRow: { flexDirection: 'row', alignItems: 'center', gap: 12, marginTop: 12 },
-  budget: { backgroundColor: Colors.surfaceAlt, borderRadius: 12, paddingHorizontal: 10, paddingVertical: 6 },
-  budgetLabel: { color: Colors.textMuted, fontFamily: Fonts.bodyBold, fontSize: 8.5, letterSpacing: 1.2 },
-  budgetValue: { color: Colors.text, fontFamily: Fonts.display, fontSize: 15 },
-  meta: { flexDirection: 'row', alignItems: 'center', gap: 4, flexShrink: 1 },
-  metaText: { color: Colors.textLight, fontFamily: Fonts.bodyMedium, fontSize: 12 },
-  activityText: { color: Colors.textMuted, fontFamily: Fonts.bodyMedium, fontSize: 11.5, marginLeft: 'auto' },
-  authorRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 12, paddingTop: 12, borderTopWidth: 1, borderTopColor: Colors.border },
-  authorButton: { flex: 1, minWidth: 0, flexDirection: 'row', alignItems: 'center' },
-  authorCopy: { flex: 1, minWidth: 0, marginLeft: 9, gap: 3, alignItems: 'flex-start' },
-  authorName: { color: Colors.text, fontFamily: Fonts.bodyBold, fontSize: 13 },
-  saveButton: { width: 40, height: 40, borderRadius: 14, backgroundColor: Colors.surfaceAlt, alignItems: 'center', justifyContent: 'center' },
-  apply: { minWidth: 104 },
+  posted: { color: Colors.textMuted, fontFamily: Fonts.bodyMedium, fontSize: 11.5, marginTop: 1 },
+  urgentChip: { flexDirection: 'row', alignItems: 'center', gap: 3, backgroundColor: '#FFE4E6', borderRadius: 999, paddingHorizontal: 9, paddingVertical: 5 },
+  urgentText: { color: '#E11D48', fontFamily: Fonts.bodyBold, fontSize: 11 },
+  saveButton: { width: 34, height: 34, borderRadius: 12, backgroundColor: Colors.background, alignItems: 'center', justifyContent: 'center' },
+  title: { color: Colors.text, fontFamily: Fonts.display, fontSize: 18, lineHeight: 24, letterSpacing: -0.3, marginTop: 14 },
+  description: { color: Colors.textLight, fontFamily: Fonts.body, fontSize: 13.5, lineHeight: 20, marginTop: 5 },
+  photoRow: { flexDirection: 'row', gap: 8, marginTop: 12 },
+  photoWrap: { flex: 1, maxWidth: '33%', aspectRatio: 1.25, borderRadius: 16, overflow: 'hidden', backgroundColor: Colors.surfaceAlt },
+  photo: { width: '100%', height: '100%' },
+  photoMore: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(5,10,31,0.55)', alignItems: 'center', justifyContent: 'center' },
+  photoMoreText: { color: Colors.white, fontFamily: Fonts.display, fontSize: 18 },
+  infoRow: { flexDirection: 'row', alignItems: 'center', marginTop: 14 },
+  budgetValue: { color: Colors.text, fontFamily: Fonts.display, fontSize: 19, letterSpacing: -0.3 },
+  budgetLabel: { color: Colors.textMuted, fontFamily: Fonts.bodyMedium, fontSize: 11 },
+  infoDivider: { width: 1, height: 28, backgroundColor: Colors.border, marginHorizontal: 14 },
+  infoValue: { color: Colors.text, fontFamily: Fonts.display, fontSize: 19 },
+  apply: { minWidth: 108, borderRadius: 14 },
+  authorRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginTop: 14,
+    paddingTop: 12,
+    borderTopWidth: 1,
+    borderTopColor: '#EEF2F7',
+  },
+  authorName: { flex: 1, color: Colors.textLight, fontFamily: Fonts.bodySemibold, fontSize: 12.5 },
 });

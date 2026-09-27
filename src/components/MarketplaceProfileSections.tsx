@@ -5,6 +5,7 @@ import Avatar from './Avatar';
 import AppIcon from './AppIcon';
 import Button from './Button';
 import BambooTexture from './brand/BambooTexture';
+import MeghalayaSky from './brand/MeghalayaSky';
 import KhasiWeave from './brand/KhasiWeave';
 import Card from './ui/Card';
 import { categoryStyle } from '../constants/Categories';
@@ -71,10 +72,10 @@ export function ProfileIdentityHeader({ user, provider, trust, isOwner, onEditPh
 
   return (
     <View style={styles.identityCard}>
-      <LinearGradient colors={[...Gradients.brand]} start={{ x: 0, y: 1 }} end={{ x: 1, y: 0 }} style={styles.banner}>
-        <BambooTexture color={Colors.white} opacity={0.16} />
+      <View style={styles.banner}>
+        <MeghalayaSky animated={false} style={styles.bannerSky} />
         <KhasiWeave height={8} color={Colors.white} opacity={0.45} bordered={false} style={styles.bannerWeave} />
-      </LinearGradient>
+      </View>
 
       <View style={styles.identityBody}>
         <View style={styles.avatarRow}>
@@ -478,7 +479,8 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 8 },
     elevation: 3,
   },
-  banner: { height: 86 },
+  banner: { height: 86, overflow: 'hidden' },
+  bannerSky: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 },
   bannerWeave: { position: 'absolute', bottom: 8, left: 0, right: 0 },
   identityBody: { paddingHorizontal: Spacing.md, paddingBottom: Spacing.md },
   avatarRow: { flexDirection: 'row', alignItems: 'flex-end', marginTop: -(AVATAR / 2 + 4) },
