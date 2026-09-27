@@ -27,14 +27,41 @@ dist/
 *.swo
 *~
 
-# React Native
+# React Native / Xcode
 .gradle
-build/
 .m2
 *.jks
 *.keystore
-android/
-ios/
+!debug.keystore
+xcuserdata
+*.pbxuser
+!default.pbxuser
+*.mode1v3
+!default.mode1v3
+*.mode2v3
+!default.mode2v3
+*.perspectivev3
+!default.perspectivev3
+*.xccheckout
+*.moved-aside
+DerivedData
+*.hmap
+*.ipa
+*.xcuserstate
+ios/.xcode.env.local
+.idea
+local.properties
+*.iml
+*.hprof
+.cxx/
+/ios/Pods/
+/vendor/bundle/
+.metro-health-check*
+/coverage
+*.jsbundle
 
-# Watchman
-.watchmanconfig
+# fastlane
+**/fastlane/report.xml
+**/fastlane/Preview.html
+**/fastlane/screenshots
+**/fastlane/test_output
