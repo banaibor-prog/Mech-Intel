@@ -13,7 +13,7 @@ export default function RootNavigator() {
   if (loading) {
     return (
       <View style={styles.loaderContainer}>
-        <GycLoader size={96} />
+        <GycLoader size={150} label="Loading reliable local services…" />
       </View>
     );
   }

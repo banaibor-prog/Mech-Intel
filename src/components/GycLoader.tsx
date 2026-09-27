@@ -1,41 +1,37 @@
 import React, { useEffect, useRef } from 'react';
 import { Animated, Easing, StyleProp, StyleSheet, Text, View, ViewStyle } from 'react-native';
-import Svg, { Circle, G, Line, Path } from 'react-native-svg';
+import Svg, { G, Path } from 'react-native-svg';
 import { Colors } from '../constants/Colors';
 import { Fonts } from '../constants/Typography';
 
 const AnimatedPath = Animated.createAnimatedComponent(Path);
-const AnimatedCircle = Animated.createAnimatedComponent(Circle);
-const AnimatedLine = Animated.createAnimatedComponent(Line);
 const AnimatedG = Animated.createAnimatedComponent(G);
 
-const LOOP_MS = 2800;
-const STROKE = 5;
+const LOOP_MS = 2400;
+const STROKE = 4;
 
-// The GYC brand mark (umbrella with a check under it), sitting low in the box so rain has room
-// to fall onto it. `len` is each path's measured length, used to draw it on with dash offsets.
+// Track arc over the mark: half circle centred at (50, 70), r = 42. A short indigo
+// segment travels along it each loop, like an indeterminate progress bar.
+const RING = 'M8 70 A42 42 0 0 1 92 70';
+const RING_LEN = 132;
+const SEGMENT_LEN = 46;
+// Indigo tint that stays visible on Colors.background (accentSoft is too faint there).
+const TRACK_COLOR = '#DCDDFB';
+
+// The GYC brand mark (umbrella with a check under it). `len` is each path's measured
+// length, used to draw it on with dash offsets.
 const MARK = {
-  canopy: { d: 'M11 69 C11 48 29 34 50 34 C71 34 89 48 89 69', len: 117 },
-  ribLeft: { d: 'M45 35 C33 41 23 52 19 63', len: 40 },
-  ribRight: { d: 'M57 35 C65 43 68 53 68.5 64.5', len: 33 },
-  hem: { d: 'M11 69 Q14 61 19 63 C30 56 55 54 68.5 64.5 Q80 59 89 69', len: 87 },
-  check: { d: 'M38 75 L46.5 84.5 L68.5 64.5', len: 43 },
+  canopy: { d: 'M18.8 69.8 C18.8 53 33.2 41.8 50 41.8 C66.8 41.8 81.2 53 81.2 69.8', len: 94 },
+  ribLeft: { d: 'M46 42.6 C36.4 47.4 28.4 56.2 25.2 65', len: 32 },
+  ribRight: { d: 'M55.6 42.6 C62 49 64.4 57 64.8 66.2', len: 26 },
+  hem: { d: 'M18.8 69.8 Q21.2 63.4 25.2 65 C34 59.4 54 57.8 64.8 66.2 Q74 61.8 81.2 69.8', len: 69 },
+  check: { d: 'M40.4 74.6 L47.2 82.2 L64.8 66.2', len: 34 },
 };
-
-// Each streak stops on the canopy's outer edge and splashes: whoever is under it stays dry.
-const RAIN = [
-  { x: 50, landY: 31.5, start: 0.28 },
-  { x: 30, landY: 36.2, start: 0.34 },
-  { x: 70, landY: 36.2, start: 0.4 },
-];
-const RAIN_FALL = 0.11;
-const RAIN_LEN = 8;
-const SPLASH = 0.1;
 
 interface GycLoaderProps {
   size?: number;
   color?: string;
-  rainColor?: string;
+  trackColor?: string;
   label?: string;
   style?: StyleProp<ViewStyle>;
 }
@@ -43,7 +39,7 @@ interface GycLoaderProps {
 export default function GycLoader({
   size = 64,
   color = Colors.accent,
-  rainColor = Colors.textMuted,
+  trackColor = TRACK_COLOR,
   label,
   style,
 }: GycLoaderProps): React.JSX.Element {
@@ -55,7 +51,7 @@ export default function GycLoader({
         toValue: 1,
         duration: LOOP_MS,
         easing: Easing.linear,
-        // SVG attributes (strokeDashoffset, r, y1/y2) can't run on the native driver.
+        // SVG attributes (strokeDashoffset, opacity on G) can't run on the native driver.
         useNativeDriver: false,
       }),
     );
@@ -88,40 +84,23 @@ export default function GycLoader({
       accessibilityRole="progressbar"
       accessibilityLabel={label ?? 'Loading'}>
       <Svg width={size} height={size} viewBox="0 0 100 100">
-        <AnimatedG opacity={at([0, 0.03, 0.9, 1], [0, 1, 1, 0])}>
-          {RAIN.map(({ x, landY, start }) => {
-            const land = start + RAIN_FALL;
-            const tip = at([start, land], [4, landY], Easing.in(Easing.quad));
-            return (
-              <G key={x}>
-                <AnimatedLine
-                  x1={x}
-                  x2={x}
-                  y1={Animated.subtract(tip, RAIN_LEN)}
-                  y2={tip}
-                  stroke={rainColor}
-                  strokeWidth={2.4}
-                  strokeLinecap="round"
-                  opacity={at([start, start + 0.02, land - 0.005, land], [0, 1, 1, 0])}
-                />
-                <AnimatedCircle
-                  cx={x}
-                  cy={landY}
-                  r={at([land, land + SPLASH], [1, 7], Easing.out(Easing.quad))}
-                  fill="none"
-                  stroke={rainColor}
-                  strokeWidth={1.8}
-                  opacity={at([land, land + 0.01, land + SPLASH], [0, 0.9, 0])}
-                />
-              </G>
-            );
-          })}
+        <Path d={RING} stroke={trackColor} strokeWidth={STROKE} strokeLinecap="round" fill="none" />
+        <AnimatedPath
+          d={RING}
+          stroke={color}
+          strokeWidth={STROKE}
+          strokeLinecap="round"
+          fill="none"
+          strokeDasharray={`${SEGMENT_LEN} ${RING_LEN}`}
+          strokeDashoffset={at([0, 1], [SEGMENT_LEN, -RING_LEN], Easing.inOut(Easing.cubic))}
+        />
 
-          {drawOn('canopy', 0.02, 0.24, Easing.out(Easing.cubic))}
-          {drawOn('ribLeft', 0.16, 0.32)}
-          {drawOn('ribRight', 0.18, 0.34)}
-          {drawOn('hem', 0.44, 0.62)}
-          {drawOn('check', 0.6, 0.74, Easing.out(Easing.quad))}
+        <AnimatedG opacity={at([0, 0.03, 0.88, 1], [0, 1, 1, 0])}>
+          {drawOn('canopy', 0.02, 0.22, Easing.out(Easing.cubic))}
+          {drawOn('ribLeft', 0.14, 0.3)}
+          {drawOn('ribRight', 0.16, 0.32)}
+          {drawOn('hem', 0.3, 0.46)}
+          {drawOn('check', 0.44, 0.58, Easing.out(Easing.quad))}
         </AnimatedG>
       </Svg>
       {label ? <Text style={styles.label}>{label}</Text> : null}
@@ -136,9 +115,10 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   label: {
-    marginTop: 8,
-    fontSize: 14,
+    marginTop: 12,
+    fontSize: 15,
     fontFamily: Fonts.bodyMedium,
-    color: Colors.textLight,
+    color: Colors.text,
+    textAlign: 'center',
   },
 });
