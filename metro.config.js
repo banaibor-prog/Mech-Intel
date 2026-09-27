@@ -1,11 +1,29 @@
-const {getDefaultConfig, mergeConfig} = require('@react-native/metro-config');
+const { getDefaultConfig, mergeConfig } = require('@react-native/metro-config');
 
-/**
- * Metro configuration for React Native
- * https://facebook.github.io/metro/docs/configuration
- *
- * @type {import('metro-config').MetroConfig}
- */
-const config = {};
+const defaultConfig = getDefaultConfig(__dirname);
 
-module.exports = mergeConfig(getDefaultConfig(__dirname), config);
+// Workspace-local Android/Gradle/npm scratch dirs (see README) are large and
+// irrelevant to the JS bundle; watching them slows Metro's file crawl to a crawl.
+const blockList = new RegExp(
+  [
+    /\.gradle-user-home[\\/].*/,
+    /\.android-emulator-data[\\/].*/,
+    /\.android-emulator-home[\\/].*/,
+    /\.android-temp[\\/].*/,
+    /\.npm-cache[\\/].*/,
+    /android[\\/]\.gradle[\\/].*/,
+    /android[\\/]build[\\/].*/,
+    /android[\\/]app[\\/]build[\\/].*/,
+  ]
+    .map((re) => re.source)
+    .join('|')
+);
+
+/** @type {import('@react-native/metro-config').MetroConfig} */
+const config = {
+  resolver: {
+    blockList,
+  },
+};
+
+module.exports = mergeConfig(defaultConfig, config);

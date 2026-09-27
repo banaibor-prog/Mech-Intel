@@ -7,6 +7,11 @@ yarn-error.log*
 
 # Dependencies
 node_modules/
+.npm-cache/
+.gradle-user-home/
+.android-emulator-data/
+.android-emulator-home/
+.android-temp/
 
 # Production
 build/
@@ -27,14 +32,17 @@ dist/
 *.swo
 *~
 
-# React Native
-.gradle
-build/
+# React Native — android/ is hand-maintained and tracked; only its build output is ignored
+android/.gradle
+android/build/
+android/app/build/
+android/local.properties
 .m2
 *.jks
 *.keystore
-android/
+!android/app/debug.keystore
 ios/
 
 # Watchman
 .watchmanconfig
+*.orig.*

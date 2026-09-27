@@ -1,36 +1,29 @@
-import React from 'react';
-import {SafeAreaView, StyleSheet, Text, View} from 'react-native';
+import React, { useEffect } from 'react';
+import { StatusBar, View } from 'react-native';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
+import BootSplash from 'react-native-bootsplash';
+import { AuthProvider } from './context/AuthContext';
+import { ModeProvider } from './context/ModeContext';
+import RootNavigator from './navigation/RootNavigator';
+import { Colors } from './constants/Colors';
 
 function App(): React.JSX.Element {
+  useEffect(() => {
+    BootSplash.hide({ fade: true });
+  }, []);
+
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.content}>
-        <Text style={styles.title}>Reject Mech Intel</Text>
-        <Text style={styles.subtitle}>Welcome to your React Native app</Text>
-      </View>
-    </SafeAreaView>
+    <View style={{ flex: 1, backgroundColor: Colors.background }}>
+      <SafeAreaProvider>
+        <AuthProvider>
+          <ModeProvider>
+            <StatusBar barStyle="dark-content" />
+            <RootNavigator />
+          </ModeProvider>
+        </AuthProvider>
+      </SafeAreaProvider>
+    </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-  },
-  content: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginBottom: 10,
-  },
-  subtitle: {
-    fontSize: 16,
-    color: '#666',
-  },
-});
 
 export default App;
