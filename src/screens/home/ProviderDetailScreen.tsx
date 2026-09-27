@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 import Button from '../../components/Button';
 import Avatar from '../../components/Avatar';
+import GycLoader from '../../components/GycLoader';
 import { Colors } from '../../constants/Colors';
 import { Spacing } from '../../constants/Spacing';
 import { Fonts } from '../../constants/Typography';
@@ -71,7 +72,7 @@ export default function ProviderDetailScreen({ route, navigation }: Props) {
   };
 
   if (loading) {
-    return <ActivityIndicator style={styles.loader} color={Colors.ink} />;
+    return <GycLoader size={72} style={styles.loader} />;
   }
 
   if (!provider) {

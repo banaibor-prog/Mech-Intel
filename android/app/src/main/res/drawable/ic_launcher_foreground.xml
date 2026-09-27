@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- GYC brand mark (umbrella + check), scaled into the adaptive icon's 66dp safe zone. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+  <group
+      android:scaleX="0.64"
+      android:scaleY="0.64"
+      android:translateX="22"
+      android:translateY="23.76">
+    <path
+        android:pathData="M11,57 C11,36 29,22 50,22 C71,22 89,36 89,57"
+        android:strokeColor="#5B5FEF"
+        android:strokeWidth="5"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round" />
+    <path
+        android:pathData="M45,23 C33,29 23,40 19,51"
+        android:strokeColor="#5B5FEF"
+        android:strokeWidth="5"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round" />
+    <path
+        android:pathData="M57,23 C65,31 68,41 68.5,52.5"
+        android:strokeColor="#5B5FEF"
+        android:strokeWidth="5"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round" />
+    <path
+        android:pathData="M11,57 Q14,49 19,51 C30,44 55,42 68.5,52.5 Q80,47 89,57"
+        android:strokeColor="#5B5FEF"
+        android:strokeWidth="5"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round" />
+    <path
+        android:pathData="M38,63 L46.5,72.5 L68.5,52.5"
+        android:strokeColor="#5B5FEF"
+        android:strokeWidth="5"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round" />
+  </group>
+</vector>

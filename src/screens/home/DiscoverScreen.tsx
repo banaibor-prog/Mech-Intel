@@ -20,6 +20,7 @@ import { SKILL_CATEGORIES } from '../../types/models';
 import { HomeStackParamList } from '../../navigation/types';
 import { useAuth } from '../../context/AuthContext';
 import Avatar from '../../components/Avatar';
+import GycLoader from '../../components/GycLoader';
 
 type Props = NativeStackScreenProps<HomeStackParamList, 'Discover'>;
 
@@ -116,7 +117,7 @@ export default function DiscoverScreen({ navigation }: Props) {
       </View>
 
       {loading ? (
-        <ActivityIndicator style={styles.loader} color={Colors.ink} />
+        <GycLoader size={72} style={styles.loader} />
       ) : (
         <FlatList
           data={filteredProviders}

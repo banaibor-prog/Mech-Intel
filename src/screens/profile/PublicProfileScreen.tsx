@@ -12,6 +12,7 @@ import {
 } from 'react-native';
 import Avatar from '../../components/Avatar';
 import Button from '../../components/Button';
+import GycLoader from '../../components/GycLoader';
 import {
   MarketplaceProfileContent,
   ProfileIdentityHeader,
@@ -214,7 +215,7 @@ export default function PublicProfileScreen({ route, navigation }: Props) {
   };
 
   if (loading) {
-    return <ActivityIndicator style={styles.loader} color={Colors.ink} />;
+    return <GycLoader size={72} style={styles.loader} />;
   }
 
   if (!profile) {

@@ -13,6 +13,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { DocumentData, QueryDocumentSnapshot } from 'firebase/firestore';
 import Avatar from '../../components/Avatar';
+import GycLoader from '../../components/GycLoader';
 import { Colors } from '../../constants/Colors';
 import { Spacing } from '../../constants/Spacing';
 import { Fonts } from '../../constants/Typography';
@@ -171,7 +172,7 @@ export default function ExploreScreen({ navigation }: Props) {
       </View>
 
       {loading ? (
-        <ActivityIndicator style={styles.loader} color={Colors.ink} />
+        <GycLoader size={72} style={styles.loader} />
       ) : kind === 'providers' ? (
         <FlatList
           data={visibleProviders}
