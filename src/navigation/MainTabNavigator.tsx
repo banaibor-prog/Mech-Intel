@@ -4,7 +4,6 @@ import HomeNavigator from './HomeNavigator';
 import ExploreNavigator from './ExploreNavigator';
 import NetworkNavigator from './NetworkNavigator';
 import BookingsScreen from '../screens/bookings/BookingsScreen';
-import ProfileNavigator from './ProfileNavigator';
 import { MainTabParamList } from './types';
 import FloatingTabBar from './FloatingTabBar';
 import { useLocationRecorder } from '../hooks/useLocationRecorder';
@@ -19,7 +18,6 @@ export default function MainTabNavigator() {
       <Tab.Screen name="ExploreTab" component={ExploreNavigator} />
       <Tab.Screen name="NetworkTab" component={NetworkNavigator} />
       <Tab.Screen name="BookingsTab" component={BookingsScreen} />
-      <Tab.Screen name="ProfileTab" component={ProfileNavigator} />
     </Tab.Navigator>
   );
 }

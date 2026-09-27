@@ -11,6 +11,8 @@ export type HomeStackParamList = {
   Discover: undefined;
   ProviderDetail: { uid: string };
   PublicProfile: { uid: string };
+  Profile: undefined;
+  Moderation: undefined;
 };
 
 export type ExploreStackParamList = {
@@ -27,17 +29,9 @@ export type NetworkStackParamList = {
   PublicProfile: { uid: string };
 };
 
-export type ProfileStackParamList = {
-  Profile: undefined;
-  Moderation: undefined;
-  PublicProfile: { uid: string };
-  ProviderDetail: { uid: string };
-};
-
 export type MainTabParamList = {
   HomeTab: undefined;
   ExploreTab: NavigatorScreenParams<ExploreStackParamList> | undefined;
   NetworkTab: undefined;
   BookingsTab: undefined;
-  ProfileTab: undefined;
 };

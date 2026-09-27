@@ -75,7 +75,7 @@ export default function FeedScreen({ navigation }: Props) {
   const [hasMore, setHasMore] = useState(true);
   const cursorRef = useRef<QueryDocumentSnapshot<DocumentData> | null>(null);
 
-  const goToTab = (name: 'ExploreTab' | 'NetworkTab' | 'ProfileTab') => navigation.getParent()?.navigate(name);
+  const goToTab = (name: 'ExploreTab' | 'NetworkTab') => navigation.getParent()?.navigate(name);
 
   const loadFirstPage = useCallback(async (skill?: string) => {
     const [postPage, providerCards] = await Promise.all([listFeedPostsPage(skill), listProviderCards(skill)]);
@@ -204,6 +204,7 @@ export default function FeedScreen({ navigation }: Props) {
             search={search}
             onSearchChange={setSearch}
             onLocationPress={() => navigation.navigate('Discover')}
+            onProfilePress={() => navigation.navigate('Profile')}
             onNotificationsPress={() => goToTab('NetworkTab')}
             onFilterPress={() => goToTab('ExploreTab')}
           />
@@ -211,7 +212,7 @@ export default function FeedScreen({ navigation }: Props) {
             onPostJob={() => navigation.navigate('CreatePost')}
             onFindPros={() => navigation.navigate('Discover')}
             onOpenMap={() => goToTab('ExploreTab')}
-            onOfferService={() => goToTab('ProfileTab')}
+            onOfferService={() => navigation.navigate('Profile')}
           />
           <LiveMapCard jobs={posts.length} pros={providers.length} pins={mapPins} hotspot={hotspots.headline} onOpen={() => goToTab('ExploreTab')} />
           <CategoryScroller selected={selectedSkill} onSelect={selectCategory} onSeeAll={() => goToTab('ExploreTab')} />

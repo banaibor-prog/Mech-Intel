@@ -6,6 +6,8 @@ import PostDetailScreen from '../screens/feed/PostDetailScreen';
 import DiscoverScreen from '../screens/home/DiscoverScreen';
 import ProviderDetailScreen from '../screens/home/ProviderDetailScreen';
 import PublicProfileScreen from '../screens/profile/PublicProfileScreen';
+import ProfileScreen from '../screens/profile/ProfileScreen';
+import ModerationScreen from '../screens/profile/ModerationScreen';
 import { HomeStackParamList } from './types';
 import { stackScreenOptions } from './stackOptions';
 
@@ -40,6 +42,9 @@ export default function HomeNavigator() {
         component={PublicProfileScreen}
         options={{ title: 'Profile' }}
       />
+      {/* Your own profile opens from the avatar on Home rather than a tab. */}
+      <Stack.Screen name="Profile" component={ProfileScreen} options={{ headerShown: false }} />
+      <Stack.Screen name="Moderation" component={ModerationScreen} options={{ title: 'Moderation' }} />
     </Stack.Navigator>
   );
 }

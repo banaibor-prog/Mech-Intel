@@ -18,6 +18,7 @@ interface Props {
   search: string;
   onSearchChange: (value: string) => void;
   onLocationPress: () => void;
+  onProfilePress: () => void;
   onNotificationsPress: () => void;
   onFilterPress: () => void;
 }
@@ -43,6 +44,7 @@ export default function HomeHeader({
   search,
   onSearchChange,
   onLocationPress,
+  onProfilePress,
   onNotificationsPress,
   onFilterPress,
 }: Props) {
@@ -54,9 +56,14 @@ export default function HomeHeader({
 
       <View style={[styles.inner, { paddingTop: topInset + 12 }]}>
         <View style={styles.identityRow}>
-          <View style={styles.avatarRing}>
+          <TouchableOpacity
+            accessibilityRole="button"
+            accessibilityLabel="Open your profile"
+            style={styles.avatarRing}
+            onPress={onProfilePress}
+            activeOpacity={0.8}>
             <Avatar name={displayName} photoURL={photoURL} size={42} />
-          </View>
+          </TouchableOpacity>
           <View style={styles.identityCopy}>
             <Text style={styles.eyebrow}>{timeOfDay()}</Text>
             <Text style={styles.greeting} numberOfLines={1}>

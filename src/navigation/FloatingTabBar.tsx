@@ -13,11 +13,10 @@ const TABS: Record<keyof MainTabParamList, { icon: AppIconName; label: string }>
   ExploreTab: { icon: 'map', label: 'Explore' },
   NetworkTab: { icon: 'network', label: 'Network' },
   BookingsTab: { icon: 'calendar', label: 'Bookings' },
-  ProfileTab: { icon: 'user', label: 'Profile' },
 };
 
 // The bar only shows on each tab's root screen; detail screens get the full height.
-const ROOT_SCREENS = new Set(['Feed', 'Explore', 'Network', 'Profile']);
+const ROOT_SCREENS = new Set(['Feed', 'Explore', 'Network']);
 
 /** Floating pill tab bar; root screens reserve TAB_BAR_SPACE (+ bottom inset) beneath their content. */
 export default function FloatingTabBar({ state, navigation }: BottomTabBarProps) {

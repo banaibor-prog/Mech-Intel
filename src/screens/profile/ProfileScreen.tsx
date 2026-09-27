@@ -12,7 +12,6 @@ import TextField from '../../components/ui/TextField';
 import { categoryStyle } from '../../constants/Categories';
 import { MarketplaceProfileContent, ProfileIdentityHeader, ProfileSection, ProfileStrengthCard } from '../../components/MarketplaceProfileSections';
 import { Colors } from '../../constants/Colors';
-import { useTabBarSpace } from '../../constants/Layout';
 import { Spacing } from '../../constants/Spacing';
 import { Fonts } from '../../constants/Typography';
 import { useAuth } from '../../context/AuthContext';
@@ -45,7 +44,6 @@ export default function ProfileScreen() {
   const { user, profile, refreshProfile } = useAuth();
   const navigation = useNavigation<any>();
   const insets = useSafeAreaInsets();
-  const tabBarSpace = useTabBarSpace();
   const [provider, setProvider] = useState<ProviderProfile | null>(null);
   const [trust, setTrust] = useState<TrustSummary>(EMPTY_TRUST);
   const [reviews, setReviews] = useState<any[]>([]);
@@ -168,7 +166,7 @@ export default function ProfileScreen() {
     <View style={styles.screen}>
       <ScrollView
         ref={scrollRef}
-        contentContainerStyle={{ paddingBottom: tabBarSpace + Spacing.lg }}
+        contentContainerStyle={{ paddingBottom: insets.bottom + Spacing.xl }}
         showsVerticalScrollIndicator={false}>
         <ScreenHero
           topInset={insets.top}
@@ -176,6 +174,7 @@ export default function ProfileScreen() {
           title="Profile"
           subtitle="Your marketplace identity, services and hiring activity."
           height={150}
+          right={<BackButton onPress={() => navigation.goBack()} />}
         />
         <View style={styles.body}>
           <ProfileIdentityHeader user={publicUser} provider={provider} trust={trust} isOwner onEditPhoto={handlePhoto} onEditProfile={() => openEditor('details')} />
@@ -225,6 +224,16 @@ export default function ProfileScreen() {
       </ScrollView>
       <ProfileEditor editor={editor} saving={saving} provider={provider} displayName={displayName} setDisplayName={setDisplayName} headline={headline} setHeadline={setHeadline} bio={bio} setBio={setBio} location={location} setLocation={setLocation} hourlyRate={hourlyRate} setHourlyRate={setHourlyRate} yearsExperience={yearsExperience} setYearsExperience={setYearsExperience} radius={radius} setRadius={setRadius} languages={languages} setLanguages={setLanguages} serviceTitle={serviceTitle} setServiceTitle={setServiceTitle} serviceDescription={serviceDescription} setServiceDescription={setServiceDescription} servicePrice={servicePrice} setServicePrice={setServicePrice} portfolioTitle={portfolioTitle} setPortfolioTitle={setPortfolioTitle} portfolioDescription={portfolioDescription} setPortfolioDescription={setPortfolioDescription} portfolioSkills={portfolioSkills} setPortfolioSkills={setPortfolioSkills} onClose={() => setEditor(null)} onSaveDetails={saveDetails} onToggleSkill={toggleSkill} onAddService={addService} onAddPortfolio={addPortfolio} onSelectAvailability={setAvailability} onSavePrivacy={async (showPricing) => { await persistProvider({ privacy: { ...(provider?.privacy ?? {}), showPricing } }); setEditor(null); }} />
     </View>
+  );
+}
+
+function BackButton({ onPress }: { onPress: () => void }) {
+  return (
+    <TouchableOpacity accessibilityRole="button" accessibilityLabel="Back" onPress={onPress} style={styles.backButton} hitSlop={8}>
+      <View style={styles.backIcon}>
+        <AppIcon name="arrowRight" size={17} color={Colors.white} />
+      </View>
+    </TouchableOpacity>
   );
 }
 
@@ -413,6 +422,17 @@ function ProfileSkeleton({ topInset }: { topInset: number }) {
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: Colors.background },
   flex: { flex: 1 },
+  backButton: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    backgroundColor: 'rgba(255,255,255,0.08)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.14)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  backIcon: { transform: [{ rotate: '180deg' }] },
   body: { paddingHorizontal: Spacing.md, marginTop: -Spacing.sm },
   workspaceGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
   workspaceTile: {
