@@ -4,20 +4,13 @@ import NetworkScreen from '../screens/network/NetworkScreen';
 import ProviderDetailScreen from '../screens/home/ProviderDetailScreen';
 import PublicProfileScreen from '../screens/profile/PublicProfileScreen';
 import { NetworkStackParamList } from './types';
-import { Colors } from '../constants/Colors';
+import { stackScreenOptions } from './stackOptions';
 
 const Stack = createNativeStackNavigator<NetworkStackParamList>();
 
 export default function NetworkNavigator() {
   return (
-    <Stack.Navigator
-      screenOptions={{
-        headerTintColor: Colors.text,
-        headerStyle: { backgroundColor: Colors.background },
-        headerShadowVisible: false,
-        headerTitleStyle: { fontWeight: '700' },
-      }}
-    >
+    <Stack.Navigator screenOptions={stackScreenOptions}>
       <Stack.Screen name="Network" component={NetworkScreen} options={{ headerShown: false }} />
       <Stack.Screen
         name="ProviderDetail"

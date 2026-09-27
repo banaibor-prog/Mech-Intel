@@ -2,8 +2,10 @@ import React, { useEffect, useRef } from 'react';
 import { Animated, Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import Avatar from '../Avatar';
 import AppIcon from '../AppIcon';
+import Button from '../Button';
 import { TrustBadge } from './MarketplaceBadges';
 import { FeedPost } from '../../services/dataService';
+import { categoryStyle } from '../../constants/Categories';
 import { Colors } from '../../constants/Colors';
 import { Fonts } from '../../constants/Typography';
 import { Spacing } from '../../constants/Spacing';
@@ -32,6 +34,7 @@ interface Props {
 export default function JobCard({ post, saved, onSave, onOpen, onApply, onAuthor }: Props) {
   const saveScale = useRef(new Animated.Value(1)).current;
   const urgent = isUrgent(post);
+  const cat = categoryStyle(post.skill);
   useEffect(() => {
     if (!saved) return;
     Animated.sequence([
@@ -42,82 +45,110 @@ export default function JobCard({ post, saved, onSave, onOpen, onApply, onAuthor
 
   return (
     <View style={styles.card}>
-      <View style={styles.authorRow}>
-        <TouchableOpacity accessibilityRole="button" accessibilityLabel={`Open ${post.authorName}'s profile`} style={styles.authorButton} onPress={onAuthor}>
-          <Avatar name={post.authorName} photoURL={post.authorPhotoURL} size={42} />
-          <View style={styles.authorCopy}>
-            <Text style={styles.authorName} numberOfLines={1}>{post.authorName}</Text>
-            <View style={styles.authorMeta}><TrustBadge score={post.authorTrustScore} /><Text style={styles.response}>{post.authorResponseBoost === 'fast' ? 'Fast responder' : 'Marketplace member'}</Text></View>
+      <View style={[styles.band, { backgroundColor: cat.soft }]}>
+        <View style={[styles.catIcon, { backgroundColor: cat.color }]}>
+          <AppIcon name={cat.icon} size={14} color={Colors.white} />
+        </View>
+        <Text style={[styles.catText, { color: cat.color }]}>{post.skill}</Text>
+        {urgent ? (
+          <View style={styles.urgentChip}>
+            <AppIcon name="fire" size={12} color={Colors.error} filled />
+            <Text style={styles.urgentText}>Needed today</Text>
+          </View>
+        ) : null}
+        <View style={styles.flex} />
+        <Text style={styles.posted}>{timeAgo(post.createdAt)}</Text>
+      </View>
+
+      <View style={styles.body}>
+        <TouchableOpacity accessibilityRole="button" onPress={onOpen} activeOpacity={0.82}>
+          <View style={styles.previewRow}>
+            <View style={styles.flex}>
+              <Text style={styles.title}>{post.title}</Text>
+              <Text style={styles.description} numberOfLines={2}>
+                {post.description}
+              </Text>
+            </View>
+            {post.photoURLs?.[0] ? <Image source={{ uri: post.photoURLs[0] }} style={styles.thumbnail} resizeMode="cover" /> : null}
           </View>
         </TouchableOpacity>
-        <Animated.View style={{ transform: [{ scale: saveScale }] }}>
-          <TouchableOpacity accessibilityRole="button" accessibilityLabel={saved ? 'Remove saved job' : 'Save job'} style={styles.saveButton} onPress={onSave}>
-            <AppIcon name="bookmark" size={21} color={saved ? Colors.accent : Colors.textLight} filled={saved} />
+
+        <View style={styles.infoRow}>
+          <View style={styles.budget}>
+            <Text style={styles.budgetLabel}>BUDGET</Text>
+            <Text style={styles.budgetValue}>{post.budget ? `₹${post.budget.toLocaleString('en-IN')}` : 'Quote'}</Text>
+          </View>
+          {post.location ? (
+            <View style={styles.meta}>
+              <AppIcon name="location" size={14} color={Colors.textMuted} />
+              <Text style={styles.metaText} numberOfLines={1}>
+                {post.location.split(',')[0]}
+              </Text>
+            </View>
+          ) : null}
+          <Text style={styles.activityText}>{post.applicantCount} applied</Text>
+        </View>
+
+        <View style={styles.authorRow}>
+          <TouchableOpacity accessibilityRole="button" accessibilityLabel={`Open ${post.authorName}'s profile`} style={styles.authorButton} onPress={onAuthor}>
+            <Avatar name={post.authorName} photoURL={post.authorPhotoURL} size={34} />
+            <View style={styles.authorCopy}>
+              <Text style={styles.authorName} numberOfLines={1}>
+                {post.authorName}
+              </Text>
+              <TrustBadge score={post.authorTrustScore} />
+            </View>
           </TouchableOpacity>
-        </Animated.View>
-      </View>
-
-      <TouchableOpacity accessibilityRole="button" onPress={onOpen} activeOpacity={0.82}>
-        <Text style={styles.title}>{post.title}</Text>
-        <View style={styles.chips}>
-          {urgent ? <View style={styles.urgentChip}><AppIcon name="bolt" size={12} color={Colors.warning} filled /><Text style={styles.urgentText}>Needed today</Text></View> : null}
-          <View style={styles.chip}><Text style={styles.chipText}>{post.skill}</Text></View>
-          <View style={styles.chip}><Text style={styles.chipText}>One-time</Text></View>
+          <Animated.View style={{ transform: [{ scale: saveScale }] }}>
+            <TouchableOpacity accessibilityRole="button" accessibilityLabel={saved ? 'Remove saved job' : 'Save job'} style={styles.saveButton} onPress={onSave}>
+              <AppIcon name="bookmark" size={19} color={saved ? Colors.accent : Colors.textLight} filled={saved} />
+            </TouchableOpacity>
+          </Animated.View>
+          <Button title={urgent ? 'Respond' : 'Apply'} size="sm" icon="arrowRight" onPress={onApply} style={styles.apply} />
         </View>
-        <View style={styles.previewRow}>
-          <Text style={styles.description} numberOfLines={3}>{post.description}</Text>
-          {post.photoURLs?.[0] ? <Image source={{ uri: post.photoURLs[0] }} style={styles.thumbnail} resizeMode="cover" /> : null}
-        </View>
-      </TouchableOpacity>
-
-      <View style={styles.metaRows}>
-        {post.location ? <View style={styles.meta}><AppIcon name="location" size={15} color={Colors.textMuted} /><Text style={styles.metaText} numberOfLines={1}>{post.location.split(',')[0]} · Nearby</Text></View> : null}
-        <View style={styles.meta}><AppIcon name="clock" size={15} color={Colors.textMuted} /><Text style={styles.metaText}>Posted {timeAgo(post.createdAt)}</Text></View>
-      </View>
-
-      <View style={styles.priceRow}>
-        <View><Text style={styles.priceLabel}>Budget</Text><Text style={styles.price}>{post.budget ? `\u20B9${post.budget.toLocaleString('en-IN')} fixed` : 'Quote requested'}</Text></View>
-        <View style={styles.activity}><Text style={styles.activityText}>{post.likeCount} saved</Text><View style={styles.activityDot} /><Text style={styles.activityText}>{post.applicantCount} applicants</Text></View>
-      </View>
-
-      <View style={styles.actions}>
-        <TouchableOpacity accessibilityRole="button" style={styles.secondaryAction} onPress={onOpen}><Text style={styles.secondaryActionText}>View details</Text></TouchableOpacity>
-        <TouchableOpacity accessibilityRole="button" style={styles.primaryAction} onPress={onApply}><Text style={styles.primaryActionText}>{urgent ? 'Respond' : 'Apply'}</Text><AppIcon name="arrowRight" size={16} color={Colors.white} /></TouchableOpacity>
       </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  card: { marginHorizontal: Spacing.md, marginBottom: 12, backgroundColor: Colors.surface, borderRadius: 18, borderWidth: 1, borderColor: Colors.border, padding: Spacing.md },
-  authorRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  authorButton: { flex: 1, minWidth: 0, minHeight: 48, flexDirection: 'row', alignItems: 'center' },
-  authorCopy: { flex: 1, minWidth: 0, marginLeft: 10 },
-  authorName: { color: Colors.text, fontFamily: Fonts.bodyBold, fontSize: 14 },
-  authorMeta: { flexDirection: 'row', alignItems: 'center', gap: 7, marginTop: 4 },
-  response: { flexShrink: 1, color: Colors.textMuted, fontFamily: Fonts.bodyMedium, fontSize: 10.5 },
-  saveButton: { width: 44, height: 44, borderRadius: 12, backgroundColor: Colors.surfaceAlt, alignItems: 'center', justifyContent: 'center' },
-  title: { color: Colors.text, fontFamily: Fonts.displaySemibold, fontSize: 19, lineHeight: 25, marginTop: 13 },
-  chips: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginTop: 10 },
-  chip: { height: 25, borderRadius: 8, backgroundColor: Colors.surfaceAlt, paddingHorizontal: 8, justifyContent: 'center' },
-  chipText: { color: Colors.textLight, fontFamily: Fonts.bodySemibold, fontSize: 10.5 },
-  urgentChip: { height: 25, borderRadius: 8, backgroundColor: Colors.warningSoft, paddingHorizontal: 7, flexDirection: 'row', alignItems: 'center', gap: 3 },
-  urgentText: { color: Colors.warning, fontFamily: Fonts.bodyBold, fontSize: 10.5 },
-  previewRow: { flexDirection: 'row', alignItems: 'flex-start', gap: 11, marginTop: 11 },
-  description: { flex: 1, color: Colors.textLight, fontFamily: Fonts.body, fontSize: 14, lineHeight: 20 },
-  thumbnail: { width: 76, height: 76, borderRadius: 12, backgroundColor: Colors.surfaceAlt },
-  metaRows: { flexDirection: 'row', flexWrap: 'wrap', gap: 12, marginTop: 13 },
-  meta: { flexDirection: 'row', alignItems: 'center', gap: 5, maxWidth: '65%' },
-  metaText: { color: Colors.textLight, fontFamily: Fonts.bodyMedium, fontSize: 11.5 },
-  priceRow: { minHeight: 52, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 10, borderTopWidth: 1, borderTopColor: Colors.border, marginTop: 14, paddingTop: 12 },
-  priceLabel: { color: Colors.textMuted, fontFamily: Fonts.bodyMedium, fontSize: 10 },
-  price: { color: Colors.text, fontFamily: Fonts.bodyBold, fontSize: 15, marginTop: 2 },
-  activity: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  activityText: { color: Colors.textMuted, fontFamily: Fonts.bodyMedium, fontSize: 10.5 },
-  activityDot: { width: 3, height: 3, borderRadius: 2, backgroundColor: Colors.textMuted },
-  actions: { flexDirection: 'row', gap: 9, marginTop: 13 },
-  secondaryAction: { flex: 1, minHeight: 44, borderRadius: 12, borderWidth: 1, borderColor: Colors.borderStrong, alignItems: 'center', justifyContent: 'center' },
-  primaryAction: { flex: 1, minHeight: 44, borderRadius: 12, backgroundColor: Colors.accent, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6 },
-  secondaryActionText: { color: Colors.text, fontFamily: Fonts.bodyBold, fontSize: 13 },
-  primaryActionText: { color: Colors.white, fontFamily: Fonts.bodyBold, fontSize: 13 },
+  flex: { flex: 1 },
+  card: {
+    marginHorizontal: Spacing.md,
+    marginBottom: 14,
+    backgroundColor: Colors.surface,
+    borderRadius: 22,
+    borderWidth: 1,
+    borderColor: Colors.border,
+    overflow: 'hidden',
+    shadowColor: '#1E3A8A',
+    shadowOpacity: 0.06,
+    shadowRadius: 14,
+    shadowOffset: { width: 0, height: 6 },
+    elevation: 2,
+  },
+  band: { flexDirection: 'row', alignItems: 'center', gap: 7, paddingHorizontal: 14, paddingVertical: 9 },
+  catIcon: { width: 24, height: 24, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
+  catText: { fontFamily: Fonts.bodyBold, fontSize: 12.5 },
+  urgentChip: { flexDirection: 'row', alignItems: 'center', gap: 3, backgroundColor: Colors.surface, borderRadius: 999, paddingHorizontal: 8, paddingVertical: 3 },
+  urgentText: { color: Colors.error, fontFamily: Fonts.bodyBold, fontSize: 10.5 },
+  posted: { color: Colors.textLight, fontFamily: Fonts.bodyMedium, fontSize: 11 },
+  body: { padding: 14, paddingTop: 12 },
+  previewRow: { flexDirection: 'row', alignItems: 'flex-start', gap: 12 },
+  title: { color: Colors.text, fontFamily: Fonts.display, fontSize: 18, lineHeight: 24, letterSpacing: -0.2 },
+  description: { color: Colors.textLight, fontFamily: Fonts.body, fontSize: 13.5, lineHeight: 19, marginTop: 5 },
+  thumbnail: { width: 74, height: 74, borderRadius: 16, backgroundColor: Colors.surfaceAlt },
+  infoRow: { flexDirection: 'row', alignItems: 'center', gap: 12, marginTop: 12 },
+  budget: { backgroundColor: Colors.surfaceAlt, borderRadius: 12, paddingHorizontal: 10, paddingVertical: 6 },
+  budgetLabel: { color: Colors.textMuted, fontFamily: Fonts.bodyBold, fontSize: 8.5, letterSpacing: 1.2 },
+  budgetValue: { color: Colors.text, fontFamily: Fonts.display, fontSize: 15 },
+  meta: { flexDirection: 'row', alignItems: 'center', gap: 4, flexShrink: 1 },
+  metaText: { color: Colors.textLight, fontFamily: Fonts.bodyMedium, fontSize: 12 },
+  activityText: { color: Colors.textMuted, fontFamily: Fonts.bodyMedium, fontSize: 11.5, marginLeft: 'auto' },
+  authorRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 12, paddingTop: 12, borderTopWidth: 1, borderTopColor: Colors.border },
+  authorButton: { flex: 1, minWidth: 0, flexDirection: 'row', alignItems: 'center' },
+  authorCopy: { flex: 1, minWidth: 0, marginLeft: 9, gap: 3, alignItems: 'flex-start' },
+  authorName: { color: Colors.text, fontFamily: Fonts.bodyBold, fontSize: 13 },
+  saveButton: { width: 40, height: 40, borderRadius: 14, backgroundColor: Colors.surfaceAlt, alignItems: 'center', justifyContent: 'center' },
+  apply: { minWidth: 104 },
 });

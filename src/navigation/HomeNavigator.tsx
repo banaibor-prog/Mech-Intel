@@ -7,30 +7,23 @@ import DiscoverScreen from '../screens/home/DiscoverScreen';
 import ProviderDetailScreen from '../screens/home/ProviderDetailScreen';
 import PublicProfileScreen from '../screens/profile/PublicProfileScreen';
 import { HomeStackParamList } from './types';
-import { Colors } from '../constants/Colors';
+import { stackScreenOptions } from './stackOptions';
 
 const Stack = createNativeStackNavigator<HomeStackParamList>();
 
 export default function HomeNavigator() {
   return (
-    <Stack.Navigator
-      screenOptions={{
-        headerTintColor: Colors.text,
-        headerStyle: { backgroundColor: Colors.background },
-        headerShadowVisible: false,
-        headerTitleStyle: { fontWeight: '700' },
-      }}
-    >
+    <Stack.Navigator screenOptions={stackScreenOptions}>
       <Stack.Screen name="Feed" component={FeedScreen} options={{ headerShown: false }} />
       <Stack.Screen
         name="CreatePost"
         component={CreatePostScreen}
-        options={{ title: 'New Job Post' }}
+        options={{ title: 'Post a job' }}
       />
       <Stack.Screen
         name="PostDetail"
         component={PostDetailScreen}
-        options={{ title: 'Job Post' }}
+        options={{ title: 'Job details' }}
       />
       <Stack.Screen
         name="Discover"

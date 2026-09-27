@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import {
-  ActivityIndicator,
   FlatList,
   StyleSheet,
   Text,
@@ -10,6 +9,11 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import Avatar from '../../components/Avatar';
+import AppIcon from '../../components/AppIcon';
+import GycLoader from '../../components/GycLoader';
+import GycLogo from '../../components/brand/GycLogo';
+import ScreenHero from '../../components/ui/ScreenHero';
+import { useTabBarSpace } from '../../constants/Layout';
 import { Colors } from '../../constants/Colors';
 import { Spacing } from '../../constants/Spacing';
 import { Fonts } from '../../constants/Typography';
@@ -19,8 +23,6 @@ import { Connection } from '../../types/models';
 import { NetworkStackParamList } from '../../navigation/types';
 
 type Props = NativeStackScreenProps<NetworkStackParamList, 'Network'>;
-
-const TAB_BAR_CLEARANCE = 96;
 
 function timeAgo(ts: number): string {
   const days = Math.floor((Date.now() - ts) / 86400000);
@@ -33,6 +35,7 @@ function timeAgo(ts: number): string {
 
 export default function NetworkScreen({ navigation }: Props) {
   const insets = useSafeAreaInsets();
+  const tabBarSpace = useTabBarSpace();
   const { user } = useAuth();
   const [connections, setConnections] = useState<Connection[]>([]);
   const [loading, setLoading] = useState(true);
@@ -52,7 +55,7 @@ export default function NetworkScreen({ navigation }: Props) {
   if (loading) {
     return (
       <View style={[styles.container, styles.centered]}>
-        <ActivityIndicator color={Colors.ink} />
+        <GycLoader size={96} label="Loading your network…" />
       </View>
     );
   }
@@ -60,24 +63,20 @@ export default function NetworkScreen({ navigation }: Props) {
   return (
     <FlatList
       style={styles.container}
-      contentContainerStyle={[
-        styles.content,
-        {
-          paddingTop: insets.top + Spacing.lg,
-          paddingBottom: insets.bottom + TAB_BAR_CLEARANCE + Spacing.lg,
-        },
-      ]}
+      contentContainerStyle={{ paddingBottom: tabBarSpace + Spacing.lg }}
       data={connections}
       keyExtractor={(item) => item.uid}
       ListHeaderComponent={
-        <View style={styles.header}>
-          <Text style={styles.title}>My Network</Text>
-          <Text style={styles.subtitle}>
-            {connections.length > 0
+        <ScreenHero
+          topInset={insets.top}
+          eyebrow="Your community"
+          title="My Network"
+          subtitle={
+            connections.length > 0
               ? `${connections.length} ${connections.length === 1 ? 'person' : 'people'} you've worked with`
-              : 'People you hire and work with appear here'}
-          </Text>
-        </View>
+              : 'People you hire and work with appear here'
+          }
+        />
       }
       renderItem={({ item }) => (
         <TouchableOpacity
@@ -98,11 +97,15 @@ export default function NetworkScreen({ navigation }: Props) {
               </Text>
             ) : null}
           </View>
-          <Text style={styles.time}>{timeAgo(item.lastInteractionAt)}</Text>
+          <View style={styles.side}>
+            <Text style={styles.time}>{timeAgo(item.lastInteractionAt)}</Text>
+            <AppIcon name="arrowRight" size={15} color={Colors.textMuted} />
+          </View>
         </TouchableOpacity>
       )}
       ListEmptyComponent={
         <View style={styles.empty}>
+          <GycLogo size={96} />
           <Text style={styles.emptyTitle}>No connections yet</Text>
           <Text style={styles.emptyText}>
             When you hire someone or apply for a job, they'll show up here so you can find them
@@ -117,30 +120,23 @@ export default function NetworkScreen({ navigation }: Props) {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: Colors.background },
   centered: { alignItems: 'center', justifyContent: 'center' },
-  content: { paddingHorizontal: Spacing.lg },
-  header: { marginBottom: Spacing.lg },
-  title: {
-    fontFamily: Fonts.display,
-    fontSize: 26,
-    color: Colors.text,
-    letterSpacing: -0.5,
-  },
-  subtitle: {
-    fontFamily: Fonts.body,
-    fontSize: 13,
-    color: Colors.textLight,
-    marginTop: 3,
-  },
   row: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: Colors.surface,
     borderWidth: 1,
     borderColor: Colors.border,
-    borderRadius: 14,
+    borderRadius: 20,
     padding: Spacing.md - 2,
+    marginHorizontal: Spacing.md,
     marginBottom: Spacing.sm + 2,
+    shadowColor: '#1E3A8A',
+    shadowOpacity: 0.05,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 1,
   },
+  side: { alignItems: 'flex-end', gap: 6, marginLeft: Spacing.sm },
   rowBody: { flex: 1, marginLeft: Spacing.sm + 2 },
   name: {
     fontFamily: Fonts.bodyBold,
@@ -163,17 +159,17 @@ const styles = StyleSheet.create({
     fontFamily: Fonts.bodyMedium,
     fontSize: 11,
     color: Colors.textMuted,
-    marginLeft: Spacing.sm,
   },
   empty: {
     alignItems: 'center',
-    paddingTop: Spacing.xxl,
-    paddingHorizontal: Spacing.md,
+    paddingTop: Spacing.xl,
+    paddingHorizontal: Spacing.xl,
   },
   emptyTitle: {
-    fontFamily: Fonts.bodyBold,
-    fontSize: 16,
+    fontFamily: Fonts.display,
+    fontSize: 18,
     color: Colors.text,
+    marginTop: Spacing.md,
     marginBottom: Spacing.xs,
   },
   emptyText: {

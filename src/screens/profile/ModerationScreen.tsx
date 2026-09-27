@@ -1,8 +1,13 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
+import AppIcon from '../../components/AppIcon';
 import Avatar from '../../components/Avatar';
+import GycLoader from '../../components/GycLoader';
+import GycLogo from '../../components/brand/GycLogo';
+import KhasiWeave from '../../components/brand/KhasiWeave';
+import Card from '../../components/ui/Card';
 import { Colors } from '../../constants/Colors';
 import { Spacing } from '../../constants/Spacing';
 import { Fonts } from '../../constants/Typography';
@@ -73,6 +78,7 @@ export default function ModerationScreen() {
   if (!profile?.isAdmin) {
     return (
       <View style={[styles.container, styles.centered]}>
+        <GycLogo size={80} />
         <Text style={styles.deniedText}>You don't have access to this page.</Text>
       </View>
     );
@@ -81,7 +87,7 @@ export default function ModerationScreen() {
   if (loading) {
     return (
       <View style={[styles.container, styles.centered]}>
-        <ActivityIndicator color={Colors.ink} />
+        <GycLoader size={100} label="Loading reports" />
       </View>
     );
   }
@@ -94,17 +100,22 @@ export default function ModerationScreen() {
       keyExtractor={(item) => item.id}
       ListHeaderComponent={
         <View style={styles.header}>
+          <Text style={styles.eyebrow}>COMMUNITY SAFETY</Text>
           <Text style={styles.title}>Moderation queue</Text>
           <Text style={styles.subtitle}>
             {rows.length} recent {rows.length === 1 ? 'report' : 'reports'} and blocks
           </Text>
+          <KhasiWeave height={8} opacity={0.35} bordered={false} style={styles.weave} />
         </View>
       }
       renderItem={({ item }) => (
-        <View style={styles.row}>
+        <Card style={styles.row} accent={item.type === 'report' ? Colors.error : Colors.textMuted}>
           <View style={styles.rowTop}>
             <View style={[styles.typeBadge, item.type === 'report' ? styles.typeBadgeReport : styles.typeBadgeBlock]}>
-              <Text style={styles.typeBadgeText}>{item.type === 'report' ? 'Report' : 'Block'}</Text>
+              <AppIcon name={item.type === 'report' ? 'bell' : 'close'} size={11} color={item.type === 'report' ? Colors.error : Colors.textLight} />
+              <Text style={[styles.typeBadgeText, item.type === 'block' && styles.typeBadgeTextBlock]}>
+                {item.type === 'report' ? 'Report' : 'Block'}
+              </Text>
             </View>
             <Text style={styles.time}>{timeAgo(item.createdAt)}</Text>
           </View>
@@ -121,7 +132,7 @@ export default function ModerationScreen() {
               </Text>
               <Text style={styles.partyRole}>reporter</Text>
             </TouchableOpacity>
-            <Text style={styles.arrow}>→</Text>
+            <AppIcon name="arrowRight" size={16} color={Colors.textMuted} />
             <TouchableOpacity
               style={styles.party}
               activeOpacity={0.8}
@@ -133,11 +144,12 @@ export default function ModerationScreen() {
               <Text style={styles.partyRole}>target</Text>
             </TouchableOpacity>
           </View>
-        </View>
+        </Card>
       )}
       ListEmptyComponent={
         <View style={styles.empty}>
-          <Text style={styles.emptyText}>No reports or blocks yet.</Text>
+          <GycLogo size={80} />
+          <Text style={styles.emptyText}>No reports or blocks yet. Khublei for keeping it safe.</Text>
         </View>
       }
     />
@@ -148,12 +160,15 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: Colors.background },
   centered: { alignItems: 'center', justifyContent: 'center' },
   deniedText: {
-    fontFamily: Fonts.body,
+    fontFamily: Fonts.bodyMedium,
     color: Colors.textLight,
     fontSize: 14,
+    marginTop: Spacing.md,
   },
-  content: { padding: Spacing.lg },
-  header: { marginBottom: Spacing.lg },
+  content: { padding: Spacing.md },
+  header: { marginBottom: Spacing.md },
+  eyebrow: { fontFamily: Fonts.bodyBold, fontSize: 10.5, letterSpacing: 2, color: Colors.accent, marginBottom: 2 },
+  weave: { marginTop: Spacing.md },
   title: {
     fontFamily: Fonts.display,
     fontSize: 24,
@@ -166,21 +181,17 @@ const styles = StyleSheet.create({
     color: Colors.textLight,
     marginTop: 3,
   },
-  row: {
-    backgroundColor: Colors.surface,
-    borderWidth: 1,
-    borderColor: Colors.border,
-    borderRadius: 14,
-    padding: Spacing.md - 2,
-    marginBottom: Spacing.sm + 4,
-  },
+  row: { marginBottom: Spacing.sm + 4 },
   rowTop: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
   },
   typeBadge: {
-    borderRadius: 8,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    borderRadius: 999,
     paddingHorizontal: Spacing.sm,
     paddingVertical: 3,
   },
@@ -191,6 +202,7 @@ const styles = StyleSheet.create({
     fontSize: 11,
     color: Colors.error,
   },
+  typeBadgeTextBlock: { color: Colors.textLight },
   time: {
     fontFamily: Fonts.bodyMedium,
     fontSize: 11,
@@ -231,12 +243,6 @@ const styles = StyleSheet.create({
     color: Colors.textMuted,
     marginTop: 1,
   },
-  arrow: {
-    fontFamily: Fonts.bodyBold,
-    fontSize: 14,
-    color: Colors.textMuted,
-    marginHorizontal: Spacing.xs,
-  },
   empty: {
     alignItems: 'center',
     paddingTop: Spacing.xxl,
@@ -245,5 +251,7 @@ const styles = StyleSheet.create({
     fontFamily: Fonts.body,
     fontSize: 13.5,
     color: Colors.textLight,
+    marginTop: Spacing.md,
+    textAlign: 'center',
   },
 });

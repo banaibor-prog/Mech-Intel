@@ -5,27 +5,20 @@ import ProviderDetailScreen from '../screens/home/ProviderDetailScreen';
 import PostDetailScreen from '../screens/feed/PostDetailScreen';
 import PublicProfileScreen from '../screens/profile/PublicProfileScreen';
 import { ExploreStackParamList } from './types';
-import { Colors } from '../constants/Colors';
+import { stackScreenOptions } from './stackOptions';
 
 const Stack = createNativeStackNavigator<ExploreStackParamList>();
 
 export default function ExploreNavigator() {
   return (
-    <Stack.Navigator
-      screenOptions={{
-        headerTintColor: Colors.text,
-        headerStyle: { backgroundColor: Colors.background },
-        headerShadowVisible: false,
-        headerTitleStyle: { fontWeight: '700' },
-      }}
-    >
+    <Stack.Navigator screenOptions={stackScreenOptions}>
       <Stack.Screen name="Explore" component={ExploreScreen} options={{ headerShown: false }} />
       <Stack.Screen
         name="ProviderDetail"
         component={ProviderDetailScreen}
         options={{ title: 'Provider' }}
       />
-      <Stack.Screen name="PostDetail" component={PostDetailScreen} options={{ title: 'Job Post' }} />
+      <Stack.Screen name="PostDetail" component={PostDetailScreen} options={{ title: 'Job details' }} />
       <Stack.Screen
         name="PublicProfile"
         component={PublicProfileScreen}

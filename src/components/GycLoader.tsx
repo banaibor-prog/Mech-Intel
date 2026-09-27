@@ -1,49 +1,44 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useId, useRef } from 'react';
 import { Animated, Easing, StyleProp, StyleSheet, Text, View, ViewStyle } from 'react-native';
-import Svg, { G, Path } from 'react-native-svg';
+import Svg, { Defs, G, LinearGradient, Path, Stop } from 'react-native-svg';
 import { Colors } from '../constants/Colors';
 import { Fonts } from '../constants/Typography';
+import {
+  BRAND_GRADIENT,
+  BRAND_GRADIENT_VECTOR,
+  LOGO_ARMS,
+  LOGO_HEAD,
+  LOGO_RIBS,
+  LOGO_WEAVE,
+  LOGO_WINGS,
+} from './brand/logoPaths';
 
 const AnimatedPath = Animated.createAnimatedComponent(Path);
 const AnimatedG = Animated.createAnimatedComponent(G);
 
-const LOOP_MS = 2400;
-const STROKE = 4;
+const LOOP_MS = 2600;
 
-// Track arc over the mark: half circle centred at (50, 70), r = 42. A short indigo
+// Sky arc over the knup: half circle centred at (50, 62), r = 44. A short gradient
 // segment travels along it each loop, like an indeterminate progress bar.
-const RING = 'M8 70 A42 42 0 0 1 92 70';
-const RING_LEN = 132;
-const SEGMENT_LEN = 46;
-// Indigo tint that stays visible on Colors.background (accentSoft is too faint there).
-const TRACK_COLOR = '#DCDDFB';
+const RING = 'M6 62 A44 44 0 0 1 94 62';
+const RING_LEN = 139;
+const SEGMENT_LEN = 44;
+const RING_STROKE = 3.6;
+const TRACK_COLOR = '#DCE6FB';
 
-// The GYC brand mark (umbrella with a check under it). `len` is each path's measured
-// length, used to draw it on with dash offsets.
-const MARK = {
-  canopy: { d: 'M18.8 69.8 C18.8 53 33.2 41.8 50 41.8 C66.8 41.8 81.2 53 81.2 69.8', len: 94 },
-  ribLeft: { d: 'M46 42.6 C36.4 47.4 28.4 56.2 25.2 65', len: 32 },
-  ribRight: { d: 'M55.6 42.6 C62 49 64.4 57 64.8 66.2', len: 26 },
-  hem: { d: 'M18.8 69.8 Q21.2 63.4 25.2 65 C34 59.4 54 57.8 64.8 66.2 Q74 61.8 81.2 69.8', len: 69 },
-  check: { d: 'M40.4 74.6 L47.2 82.2 L64.8 66.2', len: 34 },
-};
+// The logo (content x 5–95, y 10–61) scaled to sit under the arc.
+const MARK_TRANSFORM = 'translate(14 26.8) scale(0.72)';
 
 interface GycLoaderProps {
   size?: number;
-  color?: string;
-  trackColor?: string;
   label?: string;
   style?: StyleProp<ViewStyle>;
 }
 
-export default function GycLoader({
-  size = 64,
-  color = Colors.accent,
-  trackColor = TRACK_COLOR,
-  label,
-  style,
-}: GycLoaderProps): React.JSX.Element {
+export default function GycLoader({ size = 64, label, style }: GycLoaderProps): React.JSX.Element {
   const progress = useRef(new Animated.Value(0)).current;
+  const gradientId = `gycl${useId().replace(/:/g, '')}`;
+  const brand = `url(#${gradientId})`;
 
   useEffect(() => {
     const loop = Animated.loop(
@@ -51,7 +46,7 @@ export default function GycLoader({
         toValue: 1,
         duration: LOOP_MS,
         easing: Easing.linear,
-        // SVG attributes (strokeDashoffset, opacity on G) can't run on the native driver.
+        // SVG attributes (strokeDashoffset, opacity, r) can't run on the native driver.
         useNativeDriver: false,
       }),
     );
@@ -61,22 +56,7 @@ export default function GycLoader({
 
   const at = (input: number[], output: number[], easing?: (t: number) => number) =>
     progress.interpolate({ inputRange: input, outputRange: output, easing, extrapolate: 'clamp' });
-
-  const drawOn = (part: keyof typeof MARK, from: number, to: number, easing = Easing.inOut(Easing.cubic)) => {
-    const { d, len } = MARK[part];
-    return (
-      <AnimatedPath
-        d={d}
-        stroke={color}
-        strokeWidth={STROKE}
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        fill="none"
-        strokeDasharray={`${len} ${len}`}
-        strokeDashoffset={at([from, to], [len, 0], easing)}
-      />
-    );
-  };
+  const fadeIn = (from: number, to: number) => at([from, to], [0, 1], Easing.out(Easing.quad));
 
   return (
     <View
@@ -84,23 +64,38 @@ export default function GycLoader({
       accessibilityRole="progressbar"
       accessibilityLabel={label ?? 'Loading'}>
       <Svg width={size} height={size} viewBox="0 0 100 100">
-        <Path d={RING} stroke={trackColor} strokeWidth={STROKE} strokeLinecap="round" fill="none" />
+        <Defs>
+          <LinearGradient id={gradientId} gradientUnits="userSpaceOnUse" {...BRAND_GRADIENT_VECTOR}>
+            {BRAND_GRADIENT.map((s) => (
+              <Stop key={s.offset} offset={s.offset} stopColor={s.color} />
+            ))}
+          </LinearGradient>
+        </Defs>
+
+        <Path d={RING} stroke={TRACK_COLOR} strokeWidth={RING_STROKE} strokeLinecap="round" fill="none" />
         <AnimatedPath
           d={RING}
-          stroke={color}
-          strokeWidth={STROKE}
+          stroke={brand}
+          strokeWidth={RING_STROKE}
           strokeLinecap="round"
           fill="none"
           strokeDasharray={`${SEGMENT_LEN} ${RING_LEN}`}
           strokeDashoffset={at([0, 1], [SEGMENT_LEN, -RING_LEN], Easing.inOut(Easing.cubic))}
         />
 
-        <AnimatedG opacity={at([0, 0.03, 0.88, 1], [0, 1, 1, 0])}>
-          {drawOn('canopy', 0.02, 0.22, Easing.out(Easing.cubic))}
-          {drawOn('ribLeft', 0.14, 0.3)}
-          {drawOn('ribRight', 0.16, 0.32)}
-          {drawOn('hem', 0.3, 0.46)}
-          {drawOn('check', 0.44, 0.58, Easing.out(Easing.quad))}
+        <AnimatedG opacity={at([0, 0.03, 0.9, 1], [0, 1, 1, 0])}>
+          <G transform={MARK_TRANSFORM}>
+            {/* The shelter goes up: wings, then ribs, then the weave; then the person appears under it. */}
+            {LOGO_WINGS.map((d) => (
+              <AnimatedPath key={d} d={d} fill={brand} opacity={fadeIn(0.02, 0.16)} />
+            ))}
+            {LOGO_RIBS.map((d) => (
+              <AnimatedPath key={d} d={d} fill={brand} opacity={fadeIn(0.12, 0.26)} />
+            ))}
+            <AnimatedPath d={LOGO_WEAVE} fillRule="evenodd" fill={brand} opacity={fadeIn(0.24, 0.4)} />
+            <AnimatedPath d={LOGO_HEAD} fill={brand} opacity={fadeIn(0.42, 0.5)} />
+            <AnimatedPath d={LOGO_ARMS} fill={brand} opacity={fadeIn(0.5, 0.66)} />
+          </G>
         </AnimatedG>
       </Svg>
       {label ? <Text style={styles.label}>{label}</Text> : null}

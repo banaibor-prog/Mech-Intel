@@ -1,13 +1,11 @@
-import React, { useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import {
   View,
   Text,
-  TextInput,
   StyleSheet,
   ScrollView,
   TouchableOpacity,
   Alert,
-  ActivityIndicator,
   Image,
   Platform,
 } from 'react-native';
@@ -15,12 +13,20 @@ import { launchCamera, launchImageLibrary } from 'react-native-image-picker';
 import { PERMISSIONS, RESULTS, check, request } from 'react-native-permissions';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import Button from '../../components/Button';
+import AppIcon from '../../components/AppIcon';
+import Card from '../../components/ui/Card';
+import Chip from '../../components/ui/Chip';
+import TextField from '../../components/ui/TextField';
+import KhasiWeave from '../../components/brand/KhasiWeave';
 import { Colors } from '../../constants/Colors';
 import { Spacing } from '../../constants/Spacing';
 import { Fonts } from '../../constants/Typography';
+import { categoryStyle } from '../../constants/Categories';
 import { createPost } from '../../services/dataService';
 import { uploadPostImages } from '../../services/imageService';
-import { SKILL_CATEGORIES } from '../../types/models';
+import { approximate, getCurrentCoords } from '../../services/locationService';
+import { zoneForPoint } from '../../data/meghalayaZones';
+import { GeoPoint, SKILL_CATEGORIES } from '../../types/models';
 import { useAuth } from '../../context/AuthContext';
 import { HomeStackParamList } from '../../navigation/types';
 
@@ -32,6 +38,8 @@ interface PickedPhoto {
   height: number;
 }
 
+type LocationState = { status: 'locating' } | { status: 'found'; coords: GeoPoint; place?: string } | { status: 'failed' };
+
 const MAX_PHOTOS = 6;
 
 export default function CreatePostScreen({ navigation }: Props) {
@@ -40,10 +48,29 @@ export default function CreatePostScreen({ navigation }: Props) {
   const [description, setDescription] = useState('');
   const [skill, setSkill] = useState<string | null>(null);
   const [budget, setBudget] = useState('');
-  const [location, setLocation] = useState('');
+  const [locationLabel, setLocationLabel] = useState('');
+  const [where, setWhere] = useState<LocationState>({ status: 'locating' });
   const [photos, setPhotos] = useState<PickedPhoto[]>([]);
   const [submitting, setSubmitting] = useState(false);
   const [uploadingPhotos, setUploadingPhotos] = useState(false);
+
+  const locate = useCallback(async () => {
+    setWhere({ status: 'locating' });
+    const coords = await getCurrentCoords();
+    if (!coords) {
+      setWhere({ status: 'failed' });
+      return;
+    }
+    const point = approximate(coords);
+    const zone = zoneForPoint(point);
+    const place = zone ? `${zone.name}, ${zone.area}` : undefined;
+    setWhere({ status: 'found', coords: point, place });
+    if (place) setLocationLabel((current) => current || place);
+  }, []);
+
+  useEffect(() => {
+    locate();
+  }, [locate]);
 
   const handlePickPhotos = async () => {
     const result = await launchImageLibrary({
@@ -90,6 +117,14 @@ export default function CreatePostScreen({ navigation }: Props) {
       Alert.alert('Missing info', 'Please add a title, description, and pick a category.');
       return;
     }
+    if (where.status !== 'found') {
+      Alert.alert(
+        'Location needed',
+        'Jobs are shown on the Explore map so nearby providers can find them. Turn on location and try again.',
+        [{ text: 'Try again', onPress: locate }, { text: 'Cancel', style: 'cancel' }],
+      );
+      return;
+    }
     setSubmitting(true);
     try {
       let photoURLs: string[] = [];
@@ -103,11 +138,12 @@ export default function CreatePostScreen({ navigation }: Props) {
         title: title.trim(),
         description: description.trim(),
         skill,
+        coords: where.coords,
         ...(budget ? { budget: Number(budget) } : {}),
-        ...(location.trim() ? { location: location.trim() } : {}),
+        ...(locationLabel.trim() ? { location: locationLabel.trim() } : {}),
         ...(photoURLs.length > 0 ? { photoURLs } : {}),
       });
-      Alert.alert('Posted', 'Your job post is live on the feed.', [
+      Alert.alert('Posted', 'Your job is live on the feed and the Explore map.', [
         { text: 'OK', onPress: () => navigation.goBack() },
       ]);
     } catch (e: any) {
@@ -118,98 +154,111 @@ export default function CreatePostScreen({ navigation }: Props) {
     }
   };
 
+  const selected = skill ? categoryStyle(skill) : null;
+
   return (
     <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
-      <Text style={styles.label}>Photos</Text>
-      <View style={styles.photoRow}>
-        {photos.map((photo) => (
-          <View key={photo.uri} style={styles.photoThumbWrap}>
-            <Image source={{ uri: photo.uri }} style={styles.photoThumb} />
-            <TouchableOpacity style={styles.removeBadge} onPress={() => removePhoto(photo.uri)}>
-              <Text style={styles.removeBadgeText}>✕</Text>
-            </TouchableOpacity>
+      <Text style={styles.intro}>Tell nearby pros what you need. Your job appears on the feed and on the Explore map.</Text>
+      <KhasiWeave height={10} opacity={0.35} style={styles.weave} />
+
+      <Card style={styles.section}>
+        <TextField label="What do you need help with?" placeholder="e.g. Need an electrician today" value={title} onChangeText={setTitle} />
+        <Text style={[styles.label, styles.gapTop]}>Category</Text>
+        <View style={styles.chipGrid}>
+          {SKILL_CATEGORIES.map((c) => {
+            const cat = categoryStyle(c);
+            return <Chip key={c} label={c} icon={cat.icon} color={cat.color} active={skill === c} onPress={() => setSkill(c)} />;
+          })}
+        </View>
+        <TextField
+          label="Details"
+          containerStyle={styles.gapTop}
+          placeholder="Describe the job, timing, and anything providers should know..."
+          multiline
+          numberOfLines={5}
+          value={description}
+          onChangeText={setDescription}
+        />
+        <TextField
+          label="Budget (₹)"
+          containerStyle={styles.gapTop}
+          placeholder="Optional"
+          keyboardType="numeric"
+          value={budget}
+          onChangeText={setBudget}
+        />
+      </Card>
+
+      <Card style={styles.section} accent={selected?.color ?? Colors.accent}>
+        <View style={styles.locationRow}>
+          <View style={[styles.pinBadge, { backgroundColor: selected?.soft ?? Colors.accentSoft }]}>
+            <AppIcon name="location" size={20} color={selected?.color ?? Colors.accent} />
           </View>
-        ))}
-        {photos.length < MAX_PHOTOS && (
-          <View style={styles.addPhotoGroup}>
-            <TouchableOpacity style={styles.addPhotoButton} onPress={handlePickPhotos} activeOpacity={0.7}>
-              <Text style={styles.addPhotoIcon}>🖼️</Text>
-              <Text style={styles.addPhotoText}>Gallery</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.addPhotoButton} onPress={handleTakePhoto} activeOpacity={0.7}>
-              <Text style={styles.addPhotoIcon}>📷</Text>
-              <Text style={styles.addPhotoText}>Camera</Text>
-            </TouchableOpacity>
+          <View style={styles.flex}>
+            <Text style={styles.locationTitle}>
+              {where.status === 'locating'
+                ? 'Finding your location…'
+                : where.status === 'failed'
+                  ? 'Location is off'
+                  : where.place
+                    ? `Pinned near ${where.place}`
+                    : 'Pinned to your current location'}
+            </Text>
+            <Text style={styles.locationSub}>
+              {where.status === 'failed'
+                ? 'Needed so providers nearby can find this job on the map.'
+                : 'Only an approximate spot (~100 m) is shown, never your exact address.'}
+            </Text>
           </View>
-        )}
-      </View>
+          {where.status !== 'locating' ? (
+            <TouchableOpacity onPress={locate} hitSlop={10}>
+              <Text style={styles.retry}>{where.status === 'failed' ? 'Retry' : 'Refresh'}</Text>
+            </TouchableOpacity>
+          ) : null}
+        </View>
+        <TextField
+          label="Area name (shown on the post)"
+          containerStyle={styles.gapTop}
+          placeholder="e.g. Laitumkhrah, Shillong"
+          value={locationLabel}
+          onChangeText={setLocationLabel}
+        />
+      </Card>
 
-      <Text style={styles.label}>What do you need help with?</Text>
-      <TextInput
-        style={styles.input}
-        placeholder="e.g. Need an electrician today"
-        placeholderTextColor={Colors.textMuted}
-        value={title}
-        onChangeText={setTitle}
+      <Card style={styles.section}>
+        <Text style={styles.label}>Photos</Text>
+        <View style={styles.photoRow}>
+          {photos.map((photo) => (
+            <View key={photo.uri} style={styles.photoThumbWrap}>
+              <Image source={{ uri: photo.uri }} style={styles.photoThumb} />
+              <TouchableOpacity style={styles.removeBadge} onPress={() => removePhoto(photo.uri)}>
+                <AppIcon name="close" size={12} color={Colors.white} />
+              </TouchableOpacity>
+            </View>
+          ))}
+          {photos.length < MAX_PHOTOS && (
+            <>
+              <TouchableOpacity style={styles.addPhotoButton} onPress={handlePickPhotos} activeOpacity={0.7}>
+                <AppIcon name="layers" size={22} color={Colors.accent} />
+                <Text style={styles.addPhotoText}>Gallery</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.addPhotoButton} onPress={handleTakePhoto} activeOpacity={0.7}>
+                <AppIcon name="camera" size={22} color={Colors.accent} />
+                <Text style={styles.addPhotoText}>Camera</Text>
+              </TouchableOpacity>
+            </>
+          )}
+        </View>
+      </Card>
+
+      <Button
+        title={uploadingPhotos ? 'Uploading photos…' : 'Post job'}
+        icon="arrowRight"
+        onPress={handlePost}
+        loading={submitting && !uploadingPhotos}
+        disabled={submitting}
+        style={styles.submit}
       />
-
-      <Text style={styles.label}>Category</Text>
-      <View style={styles.chipGrid}>
-        {SKILL_CATEGORIES.map((c) => (
-          <TouchableOpacity
-            key={c}
-            style={[styles.chip, skill === c && styles.chipActive]}
-            onPress={() => setSkill(c)}
-            activeOpacity={0.7}
-          >
-            <Text style={[styles.chipText, skill === c && styles.chipTextActive]}>{c}</Text>
-          </TouchableOpacity>
-        ))}
-      </View>
-
-      <Text style={styles.label}>Details</Text>
-      <TextInput
-        style={styles.textArea}
-        placeholder="Describe the job, timing, and anything providers should know..."
-        placeholderTextColor={Colors.textMuted}
-        multiline
-        numberOfLines={5}
-        value={description}
-        onChangeText={setDescription}
-      />
-
-      <View style={styles.row}>
-        <View style={styles.halfInput}>
-          <Text style={styles.label}>Budget (₹)</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="Optional"
-            placeholderTextColor={Colors.textMuted}
-            keyboardType="numeric"
-            value={budget}
-            onChangeText={setBudget}
-          />
-        </View>
-        <View style={styles.halfInput}>
-          <Text style={styles.label}>Location</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="Optional"
-            placeholderTextColor={Colors.textMuted}
-            value={location}
-            onChangeText={setLocation}
-          />
-        </View>
-      </View>
-
-      {submitting ? (
-        <View style={styles.spacingTop}>
-          <ActivityIndicator color={Colors.ink} />
-          {uploadingPhotos && <Text style={styles.uploadingText}>Uploading photos...</Text>}
-        </View>
-      ) : (
-        <Button title="Post to Feed" onPress={handlePost} style={styles.spacingTop} />
-      )}
     </ScrollView>
   );
 }
@@ -221,128 +270,55 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.background,
     flexGrow: 1,
   },
+  intro: { fontFamily: Fonts.body, fontSize: 14, lineHeight: 20, color: Colors.textLight },
+  weave: { marginTop: Spacing.sm, marginBottom: Spacing.xs },
+  section: { marginTop: Spacing.md },
+  flex: { flex: 1 },
   label: {
     fontSize: 13,
     fontFamily: Fonts.bodySemibold,
     color: Colors.textLight,
-    marginBottom: Spacing.xs,
-    marginTop: Spacing.md,
+    marginBottom: 8,
   },
-  photoRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: Spacing.xs,
+  gapTop: { marginTop: Spacing.md },
+  chipGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+  locationRow: { flexDirection: 'row', alignItems: 'center' },
+  pinBadge: {
+    width: 42,
+    height: 42,
+    borderRadius: 21,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 12,
   },
-  photoThumbWrap: {
-    width: 84,
-    height: 84,
-    borderRadius: 14,
-    overflow: 'hidden',
-  },
-  photoThumb: {
-    width: '100%',
-    height: '100%',
-  },
+  locationTitle: { fontFamily: Fonts.bodyBold, fontSize: 14.5, color: Colors.text },
+  locationSub: { fontFamily: Fonts.body, fontSize: 12, lineHeight: 17, color: Colors.textLight, marginTop: 2 },
+  retry: { fontFamily: Fonts.bodySemibold, fontSize: 13, color: Colors.accent, marginLeft: 8 },
+  photoRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+  photoThumbWrap: { width: 84, height: 84, borderRadius: 14, overflow: 'hidden' },
+  photoThumb: { width: '100%', height: '100%' },
   removeBadge: {
     position: 'absolute',
     top: 4,
     right: 4,
-    width: 20,
-    height: 20,
-    borderRadius: 10,
-    backgroundColor: 'rgba(0,0,0,0.6)',
+    width: 22,
+    height: 22,
+    borderRadius: 11,
+    backgroundColor: 'rgba(15,23,42,0.7)',
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  removeBadgeText: {
-    color: Colors.white,
-    fontSize: 11,
-    fontFamily: Fonts.bodyBold,
-  },
-  addPhotoGroup: {
-    flexDirection: 'row',
-    gap: Spacing.xs,
   },
   addPhotoButton: {
     width: 84,
     height: 84,
     borderRadius: 14,
     borderWidth: 1.5,
-    borderColor: Colors.border,
+    borderColor: Colors.accentSoft,
     borderStyle: 'dashed',
-    backgroundColor: Colors.surfaceAlt,
+    backgroundColor: '#F7FAFF',
     alignItems: 'center',
     justifyContent: 'center',
   },
-  addPhotoIcon: {
-    fontSize: 22,
-  },
-  addPhotoText: {
-    fontSize: 11,
-    fontFamily: Fonts.bodyMedium,
-    color: Colors.textLight,
-    marginTop: 4,
-  },
-  input: {
-    borderWidth: 1,
-    borderColor: Colors.border,
-    backgroundColor: Colors.surface,
-    borderRadius: 14,
-    paddingHorizontal: Spacing.md,
-    paddingVertical: Spacing.sm + 4,
-    fontSize: 15,
-    fontFamily: Fonts.body,
-    color: Colors.text,
-  },
-  textArea: {
-    borderWidth: 1,
-    borderColor: Colors.border,
-    backgroundColor: Colors.surface,
-    borderRadius: 14,
-    padding: Spacing.md,
-    fontSize: 14,
-    fontFamily: Fonts.body,
-    minHeight: 110,
-    textAlignVertical: 'top',
-    color: Colors.text,
-  },
-  chipGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: Spacing.xs,
-  },
-  chip: {
-    paddingHorizontal: Spacing.md,
-    paddingVertical: Spacing.xs,
-    borderRadius: 20,
-    backgroundColor: Colors.surfaceAlt,
-  },
-  chipActive: {
-    backgroundColor: Colors.ink,
-  },
-  chipText: {
-    color: Colors.text,
-    fontSize: 13,
-    fontFamily: Fonts.bodySemibold,
-  },
-  chipTextActive: {
-    color: Colors.white,
-  },
-  row: {
-    flexDirection: 'row',
-    gap: Spacing.sm,
-  },
-  halfInput: {
-    flex: 1,
-  },
-  spacingTop: {
-    marginTop: Spacing.xl,
-    alignItems: 'center',
-  },
-  uploadingText: {
-    fontSize: 13,
-    fontFamily: Fonts.bodyMedium,
-    color: Colors.textLight,
-    marginTop: Spacing.xs,
-  },
+  addPhotoText: { fontSize: 11.5, fontFamily: Fonts.bodyMedium, color: Colors.textLight, marginTop: 5 },
+  submit: { marginTop: Spacing.xl },
 });

@@ -18,11 +18,12 @@ import SectionHeader from '../../components/home/SectionHeader';
 import JobCard from '../../components/home/JobCard';
 import HomeEmptyState from '../../components/home/HomeEmptyState';
 import HomeSkeleton from '../../components/home/HomeSkeleton';
+import LiveMapCard from '../../components/home/LiveMapCard';
+import { useTabBarSpace } from '../../constants/Layout';
+import { zoneForPoint } from '../../data/meghalayaZones';
 
 type Props = NativeStackScreenProps<HomeStackParamList, 'Feed'>;
 type MixedFeedItem = { kind: 'job'; post: FeedPost } | { kind: 'professionals'; id: string };
-
-const TAB_BAR_CLEARANCE = 82;
 
 function urgent(post: FeedPost): boolean {
   return /urgent|today|immediately|asap|emergency/i.test(`${post.title} ${post.description}`);
@@ -31,6 +32,7 @@ function urgent(post: FeedPost): boolean {
 export default function FeedScreen({ navigation }: Props) {
   const { user, profile } = useAuth();
   const insets = useSafeAreaInsets();
+  const tabBarSpace = useTabBarSpace();
   const [posts, setPosts] = useState<FeedPost[]>([]);
   const [providers, setProviders] = useState<ProviderCard[]>([]);
   const [savedIds, setSavedIds] = useState<Set<string>>(new Set());
@@ -132,7 +134,8 @@ export default function FeedScreen({ navigation }: Props) {
 
   if (loading) return <HomeSkeleton />;
 
-  const location = profile?.location || 'Set your location';
+  const zone = profile?.lastCoords ? zoneForPoint(profile.lastCoords) : null;
+  const location = zone ? `${zone.name}, ${zone.area}` : profile?.location || 'Meghalaya';
   const recommendationTitle = selectedSkill ? `${selectedSkill} opportunities` : search ? 'Search results' : activeTab === 'Urgent' ? 'Urgent jobs nearby' : activeTab === 'Nearby' ? 'Jobs near you' : 'Recommended for you';
 
   return (
@@ -141,12 +144,13 @@ export default function FeedScreen({ navigation }: Props) {
         data={mixedFeed}
         keyExtractor={(item) => item.kind === 'job' ? item.post.id : item.id}
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={[styles.content, { paddingBottom: TAB_BAR_CLEARANCE + insets.bottom }]}
+        contentContainerStyle={[styles.content, { paddingBottom: tabBarSpace + 8 }]}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={Colors.accent} colors={[Colors.accent]} />}
         onEndReached={loadMore}
         onEndReachedThreshold={0.45}
-        ListHeaderComponent={<View style={{ paddingTop: insets.top }}>
+        ListHeaderComponent={<View>
           <HomeHeader
+            topInset={insets.top}
             displayName={profile?.displayName || user?.displayName || 'Member'}
             photoURL={profile?.photoURL}
             location={location}
@@ -157,6 +161,7 @@ export default function FeedScreen({ navigation }: Props) {
             onFilterPress={() => goToTab('ExploreTab')}
           />
           <QuickActions onPostJob={() => navigation.navigate('CreatePost')} onOfferService={() => goToTab('ProfileTab')} />
+          <LiveMapCard jobs={posts.length} pros={providers.length} onOpen={() => goToTab('ExploreTab')} />
           <FeedTabs active={activeTab} onChange={setActiveTab} />
           <ProviderCarousel providers={filteredProviders} onSeeAll={() => navigation.navigate('Discover')} onSelect={(uid) => navigation.navigate('PublicProfile', { uid })} />
           <CategoryScroller selected={selectedSkill} onSelect={selectCategory} onSeeAll={() => goToTab('ExploreTab')} />
@@ -174,7 +179,7 @@ const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: Colors.background },
   content: { flexGrow: 1 },
   feedHeading: { paddingHorizontal: Spacing.md, marginTop: 22, marginBottom: 10 },
-  midSection: { marginBottom: 18, paddingVertical: 3, backgroundColor: '#F0F2F7' },
+  midSection: { marginBottom: 18, paddingVertical: 6, backgroundColor: '#EAF1FC' },
   loadingMore: { alignItems: 'center', paddingVertical: 20 },
   loadingLine: { width: 32, height: 3, borderRadius: 2, backgroundColor: Colors.accent },
   loadingText: { color: Colors.textMuted, fontFamily: Fonts.bodyMedium, fontSize: 11, marginTop: 8 },

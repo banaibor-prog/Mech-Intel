@@ -1,3 +1,5 @@
+import type { NavigatorScreenParams } from '@react-navigation/native';
+
 export type AuthStackParamList = {
   Welcome: undefined;
 };
@@ -12,7 +14,8 @@ export type HomeStackParamList = {
 };
 
 export type ExploreStackParamList = {
-  Explore: undefined;
+  /** focusId: a map item id (`job:<postId>` or `pro:<uid>`) to select and fly to on arrival. */
+  Explore: { focusId?: string } | undefined;
   ProviderDetail: { uid: string };
   PostDetail: { postId: string };
   PublicProfile: { uid: string };
@@ -27,11 +30,13 @@ export type NetworkStackParamList = {
 export type ProfileStackParamList = {
   Profile: undefined;
   Moderation: undefined;
+  PublicProfile: { uid: string };
+  ProviderDetail: { uid: string };
 };
 
 export type MainTabParamList = {
   HomeTab: undefined;
-  ExploreTab: undefined;
+  ExploreTab: NavigatorScreenParams<ExploreStackParamList> | undefined;
   NetworkTab: undefined;
   BookingsTab: undefined;
   ProfileTab: undefined;

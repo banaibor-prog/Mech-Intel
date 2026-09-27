@@ -19,7 +19,7 @@ function avatarFor(seed: number): string {
 
 export const MOCK_POSTS: MockPost[] = [
   {
-    authorName: 'Aditi Rao',
+    authorName: 'Ibadahun Kharkongor',
     authorPhotoURL: avatarFor(5),
     post: {
       id: 'mock-post-1',
@@ -28,7 +28,8 @@ export const MOCK_POSTS: MockPost[] = [
       description: 'Ceiling fan stopped working and one socket in the kitchen is sparking. Need someone today if possible.',
       skill: 'Electrician',
       budget: 400,
-      location: 'Andheri West, Mumbai',
+      location: 'Laitumkhrah, Shillong',
+      coords: { lat: 25.5711, lng: 91.9015 },
       photoURLs: photosFor('electrician-job', 2),
       likeCount: 12,
       applicantCount: 3,
@@ -36,7 +37,7 @@ export const MOCK_POSTS: MockPost[] = [
     },
   },
   {
-    authorName: 'Rohan Kapoor',
+    authorName: 'Wanbok Lyngdoh',
     authorPhotoURL: avatarFor(8),
     post: {
       id: 'mock-post-2',
@@ -45,7 +46,8 @@ export const MOCK_POSTS: MockPost[] = [
       description: 'Looking for a thorough deep clean — kitchen, bathrooms, and all rooms. Flexible on date this week.',
       skill: 'House Cleaner',
       budget: 1500,
-      location: 'Powai, Mumbai',
+      location: 'Nongthymmai, Shillong',
+      coords: { lat: 25.5816, lng: 91.9069 },
       photoURLs: photosFor('cleaning-job', 3),
       likeCount: 8,
       applicantCount: 5,
@@ -53,7 +55,7 @@ export const MOCK_POSTS: MockPost[] = [
     },
   },
   {
-    authorName: 'Sneha Iyer',
+    authorName: 'Iaishah Syiem',
     authorPhotoURL: avatarFor(9),
     post: {
       id: 'mock-post-3',
@@ -62,7 +64,8 @@ export const MOCK_POSTS: MockPost[] = [
       description: 'Looking for a live guitarist for a 2-hour set at an intimate wedding reception. Acoustic preferred.',
       skill: 'Musician',
       budget: 6000,
-      location: 'Khar, Mumbai',
+      location: 'Police Bazar, Shillong',
+      coords: { lat: 25.5738, lng: 91.8852 },
       photoURLs: photosFor('wedding-music', 1),
       likeCount: 34,
       applicantCount: 7,
@@ -70,7 +73,7 @@ export const MOCK_POSTS: MockPost[] = [
     },
   },
   {
-    authorName: 'Imran Sheikh',
+    authorName: 'Bankitlang Nongrum',
     authorPhotoURL: avatarFor(11),
     post: {
       id: 'mock-post-4',
@@ -79,7 +82,8 @@ export const MOCK_POSTS: MockPost[] = [
       description: 'Water pooling under the sink every time it\'s used. Need a plumber to diagnose and fix.',
       skill: 'Plumber',
       budget: 350,
-      location: 'Dadar, Mumbai',
+      location: 'Mawlai, Shillong',
+      coords: { lat: 25.5945, lng: 91.8849 },
       photoURLs: photosFor('plumbing-job', 2),
       likeCount: 5,
       applicantCount: 2,
@@ -87,7 +91,7 @@ export const MOCK_POSTS: MockPost[] = [
     },
   },
   {
-    authorName: 'Kavya Menon',
+    authorName: 'Daphimanroi Marbaniang',
     authorPhotoURL: avatarFor(20),
     post: {
       id: 'mock-post-5',
@@ -96,7 +100,8 @@ export const MOCK_POSTS: MockPost[] = [
       description: 'Opening a small cafe next month — need a logo, menu design, and Instagram templates. Budget flexible for the right portfolio.',
       skill: 'Freelance Designer',
       budget: 8000,
-      location: 'Remote',
+      location: 'Laban, Shillong',
+      coords: { lat: 25.5601, lng: 91.8794 },
       photoURLs: photosFor('cafe-brand', 3),
       likeCount: 21,
       applicantCount: 9,
@@ -104,7 +109,7 @@ export const MOCK_POSTS: MockPost[] = [
     },
   },
   {
-    authorName: 'Farhan Ali',
+    authorName: 'Kyrshan Wahlang',
     authorPhotoURL: avatarFor(23),
     post: {
       id: 'mock-post-6',
@@ -113,7 +118,8 @@ export const MOCK_POSTS: MockPost[] = [
       description: 'Moving to a new flat two floors up in the same building. Need 2 people to help carry furniture and boxes on Saturday.',
       skill: 'Helper',
       budget: 800,
-      location: 'Malad, Mumbai',
+      location: 'Rynjah, Shillong',
+      coords: { lat: 25.5616, lng: 91.9168 },
       photoURLs: photosFor('moving-job', 2),
       likeCount: 3,
       applicantCount: 4,
@@ -121,7 +127,7 @@ export const MOCK_POSTS: MockPost[] = [
     },
   },
   {
-    authorName: 'Zara Khan',
+    authorName: 'Evanisha Rymbai',
     authorPhotoURL: avatarFor(28),
     post: {
       id: 'mock-post-7',
@@ -130,7 +136,8 @@ export const MOCK_POSTS: MockPost[] = [
       description: 'Small birthday gathering — need a cook for snacks and a custom cake. Vegetarian only.',
       skill: 'Cook',
       budget: 3500,
-      location: 'Bandra, Mumbai',
+      location: 'Laitumkhrah, Shillong',
+      coords: { lat: 25.571, lng: 91.8958 },
       photoURLs: photosFor('birthday-catering', 2),
       likeCount: 17,
       applicantCount: 6,
@@ -138,7 +145,7 @@ export const MOCK_POSTS: MockPost[] = [
     },
   },
   {
-    authorName: 'Nikhil Bansal',
+    authorName: 'Donbok Dkhar',
     authorPhotoURL: avatarFor(32),
     post: {
       id: 'mock-post-8',
@@ -147,7 +154,8 @@ export const MOCK_POSTS: MockPost[] = [
       description: 'Need a carpenter to build a floor-to-ceiling bookshelf, roughly 8ft wide. Have a rough sketch ready.',
       skill: 'Carpenter',
       budget: 12000,
-      location: 'Lower Parel, Mumbai',
+      location: 'Upper Shillong',
+      coords: { lat: 25.5445, lng: 91.859 },
       photoURLs: photosFor('bookshelf-job', 2),
       likeCount: 26,
       applicantCount: 5,
@@ -155,7 +163,7 @@ export const MOCK_POSTS: MockPost[] = [
     },
   },
   {
-    authorName: 'Tanya Kapadia',
+    authorName: 'Rikynti Nongbri',
     authorPhotoURL: avatarFor(34),
     post: {
       id: 'mock-post-9',
@@ -164,7 +172,8 @@ export const MOCK_POSTS: MockPost[] = [
       description: 'Looking for a patient tutor for algebra and geometry, twice a week until exams. Home visits preferred.',
       skill: 'Tutor',
       budget: 4000,
-      location: 'Vile Parle, Mumbai',
+      location: 'Mawpat, Shillong',
+      coords: { lat: 25.5975, lng: 91.9183 },
       photoURLs: [],
       likeCount: 9,
       applicantCount: 3,
@@ -172,7 +181,7 @@ export const MOCK_POSTS: MockPost[] = [
     },
   },
   {
-    authorName: 'Omkar Deshmukh',
+    authorName: 'Shaphrang Sohtun',
     authorPhotoURL: avatarFor(37),
     post: {
       id: 'mock-post-10',
@@ -181,7 +190,8 @@ export const MOCK_POSTS: MockPost[] = [
       description: 'Want to set up a small terrace garden — vegetables and flowering plants. Also need monthly maintenance after.',
       skill: 'Gardener',
       budget: 5000,
-      location: 'Goregaon, Mumbai',
+      location: 'Sohra',
+      coords: { lat: 25.2597, lng: 91.7411 },
       photoURLs: photosFor('terrace-garden', 3),
       likeCount: 14,
       applicantCount: 4,
@@ -189,7 +199,7 @@ export const MOCK_POSTS: MockPost[] = [
     },
   },
   {
-    authorName: 'Isha Choudhary',
+    authorName: 'Salseng Marak',
     authorPhotoURL: avatarFor(40),
     post: {
       id: 'mock-post-11',
@@ -198,7 +208,8 @@ export const MOCK_POSTS: MockPost[] = [
       description: 'Need clean product shots for about 40 jewelry pieces for an Instagram shop launch.',
       skill: 'Photographer',
       budget: 6000,
-      location: 'Lower Parel, Mumbai',
+      location: 'Police Bazar, Shillong',
+      coords: { lat: 25.5802, lng: 91.8839 },
       photoURLs: photosFor('jewelry-photography', 3),
       likeCount: 41,
       applicantCount: 11,
@@ -206,7 +217,7 @@ export const MOCK_POSTS: MockPost[] = [
     },
   },
   {
-    authorName: 'Rajesh Iyengar',
+    authorName: 'Pynshngain Suchiang',
     authorPhotoURL: avatarFor(50),
     post: {
       id: 'mock-post-12',
@@ -215,7 +226,8 @@ export const MOCK_POSTS: MockPost[] = [
       description: 'Two split ACs need a full service and gas check before the season starts.',
       skill: 'Mechanic',
       budget: 900,
-      location: 'Mulund, Mumbai',
+      location: 'Jowai',
+      coords: { lat: 25.4464, lng: 92.2286 },
       photoURLs: photosFor('ac-service', 1),
       likeCount: 6,
       applicantCount: 2,
@@ -223,7 +235,7 @@ export const MOCK_POSTS: MockPost[] = [
     },
   },
   {
-    authorName: 'Meher Wadia',
+    authorName: 'Wandashisha Kharbuli',
     authorPhotoURL: avatarFor(54),
     post: {
       id: 'mock-post-13',
@@ -232,7 +244,8 @@ export const MOCK_POSTS: MockPost[] = [
       description: 'Need 4 articles a month, 1000-1500 words each, on budget travel in India. Ongoing work.',
       skill: 'Freelance Writer',
       budget: 2000,
-      location: 'Remote',
+      location: 'Tura',
+      coords: { lat: 25.5207, lng: 90.2106 },
       photoURLs: [],
       likeCount: 22,
       applicantCount: 13,
@@ -240,16 +253,17 @@ export const MOCK_POSTS: MockPost[] = [
     },
   },
   {
-    authorName: 'Girish Nair',
+    authorName: 'Tyngshain Rapthap',
     authorPhotoURL: avatarFor(58),
     post: {
       id: 'mock-post-14',
       authorUid: 'mock-customer-14',
-      title: 'Full flat repainting before Diwali',
-      description: '2BHK flat needs full interior repainting — walls and ceilings. Would like it done before Diwali.',
+      title: 'Full flat repainting before Christmas',
+      description: '2BHK flat needs full interior repainting — walls and ceilings. Would like it done before Christmas.',
       skill: 'Painter',
       budget: 15000,
-      location: 'Thane, Mumbai',
+      location: 'Mawlai, Shillong',
+      coords: { lat: 25.5974, lng: 91.8814 },
       photoURLs: photosFor('flat-repainting', 3),
       likeCount: 19,
       applicantCount: 8,
