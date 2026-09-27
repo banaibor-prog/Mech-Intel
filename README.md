@@ -2,6 +2,15 @@
 
 A React Native application for Reject Mech Intel.
 
+## Download the Android APK
+
+Prebuilt APKs are published on the [Releases page](../../releases):
+
+- Pushing a `v*` tag (e.g. `v1.0.0`) publishes a versioned release.
+- Running the "Android Release" workflow manually (Actions tab → Android Release → Run workflow) publishes/updates a `latest` pre-release build.
+
+These APKs are signed with the React Native debug keystore (not a Play Store release key), so they're only meant for sideloading. To install: download the `.apk` from the release onto your phone, then open it — you'll need to allow "install unknown apps" for whichever app you used to download it.
+
 ## Getting Started
 
 ### Prerequisites
