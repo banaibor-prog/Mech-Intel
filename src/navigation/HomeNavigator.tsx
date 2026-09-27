@@ -6,31 +6,26 @@ import PostDetailScreen from '../screens/feed/PostDetailScreen';
 import DiscoverScreen from '../screens/home/DiscoverScreen';
 import ProviderDetailScreen from '../screens/home/ProviderDetailScreen';
 import PublicProfileScreen from '../screens/profile/PublicProfileScreen';
+import ProfileScreen from '../screens/profile/ProfileScreen';
+import ModerationScreen from '../screens/profile/ModerationScreen';
 import { HomeStackParamList } from './types';
-import { Colors } from '../constants/Colors';
+import { stackScreenOptions } from './stackOptions';
 
 const Stack = createNativeStackNavigator<HomeStackParamList>();
 
 export default function HomeNavigator() {
   return (
-    <Stack.Navigator
-      screenOptions={{
-        headerTintColor: Colors.text,
-        headerStyle: { backgroundColor: Colors.background },
-        headerShadowVisible: false,
-        headerTitleStyle: { fontWeight: '700' },
-      }}
-    >
+    <Stack.Navigator screenOptions={stackScreenOptions}>
       <Stack.Screen name="Feed" component={FeedScreen} options={{ headerShown: false }} />
       <Stack.Screen
         name="CreatePost"
         component={CreatePostScreen}
-        options={{ title: 'New Job Post' }}
+        options={{ title: 'Post a job' }}
       />
       <Stack.Screen
         name="PostDetail"
         component={PostDetailScreen}
-        options={{ title: 'Job Post' }}
+        options={{ title: 'Job details' }}
       />
       <Stack.Screen
         name="Discover"
@@ -47,6 +42,9 @@ export default function HomeNavigator() {
         component={PublicProfileScreen}
         options={{ title: 'Profile' }}
       />
+      {/* Your own profile opens from the avatar on Home rather than a tab. */}
+      <Stack.Screen name="Profile" component={ProfileScreen} options={{ headerShown: false }} />
+      <Stack.Screen name="Moderation" component={ModerationScreen} options={{ title: 'Moderation' }} />
     </Stack.Navigator>
   );
 }

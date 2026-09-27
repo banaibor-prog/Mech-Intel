@@ -1,10 +1,11 @@
 import React from 'react';
-import { ActivityIndicator, View, StyleSheet } from 'react-native';
+import { View, StyleSheet } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { useAuth } from '../context/AuthContext';
 import AuthNavigator from './AuthNavigator';
 import MainTabNavigator from './MainTabNavigator';
 import { Colors } from '../constants/Colors';
+import GycLoader from '../components/GycLoader';
 
 export default function RootNavigator() {
   const { user, loading } = useAuth();
@@ -12,7 +13,7 @@ export default function RootNavigator() {
   if (loading) {
     return (
       <View style={styles.loaderContainer}>
-        <ActivityIndicator size="large" color={Colors.primary} />
+        <GycLoader size={150} label="Loading reliable local services…" />
       </View>
     );
   }

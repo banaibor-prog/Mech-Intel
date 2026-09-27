@@ -1,49 +1,102 @@
 import React, { useRef } from 'react';
-import { Animated, StyleSheet, Text, TouchableWithoutFeedback, ViewStyle, TextStyle } from 'react-native';
+import {
+  ActivityIndicator,
+  Animated,
+  StyleProp,
+  StyleSheet,
+  Text,
+  TextStyle,
+  TouchableWithoutFeedback,
+  View,
+  ViewStyle,
+} from 'react-native';
 import { Colors } from '../constants/Colors';
 import { Fonts } from '../constants/Typography';
+import AppIcon, { AppIconName } from './AppIcon';
 
 interface ButtonProps {
   title: string;
   onPress: () => void;
-  style?: ViewStyle;
-  textStyle?: TextStyle;
+  style?: StyleProp<ViewStyle>;
+  textStyle?: StyleProp<TextStyle>;
   disabled?: boolean;
-  variant?: 'primary' | 'outline' | 'ghost';
+  loading?: boolean;
+  icon?: AppIconName;
+  variant?: 'primary' | 'dark' | 'outline' | 'ghost';
+  size?: 'md' | 'sm';
 }
 
-function Button({ title, onPress, style, textStyle, disabled, variant = 'primary' }: ButtonProps): React.JSX.Element {
+function Button({
+  title,
+  onPress,
+  style,
+  textStyle,
+  disabled,
+  loading,
+  icon,
+  variant = 'primary',
+  size = 'md',
+}: ButtonProps): React.JSX.Element {
   const scale = useRef(new Animated.Value(1)).current;
+  const inactive = disabled || loading;
 
   const pressIn = () => {
-    if (disabled) return;
+    if (inactive) return;
     Animated.spring(scale, { toValue: 0.96, useNativeDriver: true, speed: 40, bounciness: 6 }).start();
   };
   const pressOut = () => {
-    if (disabled) return;
+    if (inactive) return;
     Animated.spring(scale, { toValue: 1, useNativeDriver: true, speed: 20, bounciness: 9 }).start();
   };
 
+  // Forward-pointing icons read as "go" and belong after the label.
+  const trailing = icon === 'arrowRight';
+  const onLight = variant === 'outline' || variant === 'ghost';
+  const contentColor = onLight ? (variant === 'ghost' ? Colors.textLight : Colors.text) : Colors.white;
+  const pad = size === 'sm' ? styles.padSm : styles.padMd;
+
+  const content = (
+    <View style={[styles.content, pad]}>
+      {loading ? (
+        <ActivityIndicator color={contentColor} size="small" />
+      ) : (
+        <>
+          {icon && !trailing ? <AppIcon name={icon} size={size === 'sm' ? 16 : 18} color={contentColor} /> : null}
+          <Text
+            style={[
+              styles.text,
+              size === 'sm' && styles.textSm,
+              { color: contentColor },
+              icon ? (trailing ? styles.textBeforeIcon : styles.textWithIcon) : null,
+              textStyle,
+            ]}>
+            {title}
+          </Text>
+          {icon && trailing ? <AppIcon name={icon} size={size === 'sm' ? 16 : 18} color={contentColor} /> : null}
+        </>
+      )}
+    </View>
+  );
+
   return (
-    <TouchableWithoutFeedback onPress={disabled ? undefined : onPress} onPressIn={pressIn} onPressOut={pressOut}>
+    <TouchableWithoutFeedback
+      onPress={inactive ? undefined : onPress}
+      onPressIn={pressIn}
+      onPressOut={pressOut}
+      accessibilityRole="button"
+      accessibilityState={{ disabled: !!inactive }}>
       <Animated.View
         style={[
           styles.button,
-          variant === 'outline' && styles.outlineButton,
-          variant === 'ghost' && styles.ghostButton,
-          disabled && styles.disabledButton,
+          variant === 'primary' && styles.primaryShadow,
+          variant === 'dark' && styles.dark,
+          variant === 'outline' && styles.outline,
+          variant === 'ghost' && styles.ghost,
+          disabled && styles.disabled,
           style,
           { transform: [{ scale }] },
         ]}>
-        <Text
-          style={[
-            styles.text,
-            variant === 'outline' && styles.outlineText,
-            variant === 'ghost' && styles.ghostText,
-            textStyle,
-          ]}>
-          {title}
-        </Text>
+        {content}
       </Animated.View>
     </TouchableWithoutFeedback>
   );
@@ -51,45 +104,33 @@ function Button({ title, onPress, style, textStyle, disabled, variant = 'primary
 
 const styles = StyleSheet.create({
   button: {
-    backgroundColor: Colors.ink,
-    paddingVertical: 14,
-    paddingHorizontal: 24,
     borderRadius: 14,
-    alignItems: 'center',
-    shadowColor: Colors.ink,
-    shadowOpacity: 0.18,
-    shadowRadius: 10,
-    shadowOffset: { width: 0, height: 4 },
-    elevation: 2,
+    overflow: 'hidden',
   },
-  outlineButton: {
-    backgroundColor: 'transparent',
+  primaryShadow: { backgroundColor: Colors.accent },
+  dark: { backgroundColor: Colors.ink },
+  outline: {
+    backgroundColor: Colors.surface,
     borderWidth: 1.5,
     borderColor: Colors.border,
-    shadowOpacity: 0,
-    elevation: 0,
   },
-  ghostButton: {
-    backgroundColor: 'transparent',
-    paddingVertical: 10,
-    shadowOpacity: 0,
-    elevation: 0,
+  ghost: { backgroundColor: 'transparent' },
+  disabled: { opacity: 0.45 },
+  content: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  disabledButton: {
-    opacity: 0.4,
-  },
+  padMd: { paddingVertical: 15, paddingHorizontal: 24 },
+  padSm: { paddingVertical: 9, paddingHorizontal: 16 },
   text: {
-    color: Colors.white,
     fontSize: 16,
     fontFamily: Fonts.bodyBold,
     textAlign: 'center',
   },
-  outlineText: {
-    color: Colors.text,
-  },
-  ghostText: {
-    color: Colors.textLight,
-  },
+  textSm: { fontSize: 13.5 },
+  textWithIcon: { marginLeft: 8 },
+  textBeforeIcon: { marginRight: 8 },
 });
 
 export default Button;

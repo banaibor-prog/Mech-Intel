@@ -5,6 +5,11 @@
  */
 export type AppMode = 'hiring' | 'working';
 
+export interface GeoPoint {
+  lat: number;
+  lng: number;
+}
+
 /** How the current user came to know a person in their network. */
 export type ConnectionKind = 'hiredThem' | 'workedForThem' | 'applied' | 'appliedToMine';
 
@@ -25,6 +30,8 @@ export interface UserProfile {
   photoURL?: string;
   phone?: string;
   location?: string;
+  /** Last approximate position recorded while using the app. */
+  lastCoords?: GeoPoint;
   isProvider: boolean;
   createdAt: number;
   /** Grants access to the moderation queue. Set manually in Firestore — there is no in-app way to grant this. */
@@ -166,6 +173,10 @@ export interface ProviderProfile {
   workTypes?: Array<'onSite' | 'remote' | 'hybrid'>;
   jobTypes?: Array<'oneTime' | 'hourly' | 'daily' | 'contract' | 'recurring'>;
   services?: ProfileService[];
+  /** Approximate (~100 m) position, refreshed while the provider uses the app. */
+  coords?: GeoPoint;
+  geohash?: string;
+  coordsUpdatedAt?: number;
   portfolio?: PortfolioProject[];
   experience?: ProfileExperience[];
   credentials?: ProfileCredential[];
@@ -199,6 +210,9 @@ export interface Post {
   skill: string;
   budget?: number;
   location?: string;
+  /** Approximate (~100 m) position recorded when the post was created. */
+  coords?: GeoPoint;
+  geohash?: string;
   photoURLs?: string[];
   likeCount: number;
   applicantCount: number;

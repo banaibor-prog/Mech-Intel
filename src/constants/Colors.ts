@@ -1,42 +1,61 @@
+// Brand palette from the GYC identity, grounded in Meghalaya — "the abode of clouds":
+// sky blue and community violet from the logo gradient, misty cloud-white surfaces,
+// forest green for success and a bamboo tan for warm craft accents.
+export const Palette = {
+  sky: '#3B82F6',
+  community: '#7C3AED',
+  friendly: '#22D3EE',
+  strength: '#0F172A',
+  clean: '#E5E7EB',
+  forest: '#15803D',
+  moss: '#4D7C0F',
+  bamboo: '#B08D57',
+  mist: '#F4F7FB',
+};
+
 export const Colors = {
-  // Core neutrals — slight cool/indigo bias rather than dead grey
-  background: '#F6F6FA',
+  background: Palette.mist,
   surface: '#FFFFFF',
-  surfaceAlt: '#EEEEF4',
+  surfaceAlt: '#EAF0F8',
 
-  // Text
-  text: '#16161F',
-  textLight: '#68697C',
-  textMuted: '#9C9DB0',
+  text: Palette.strength,
+  textLight: '#475569',
+  textMuted: '#94A3B8',
 
-  // "Light black" accents — near-black with a cool cast, used for primary actions/nav
-  ink: '#1A1B26',
-  inkSoft: '#2B2C3D',
+  ink: Palette.strength,
+  inkSoft: '#1E293B',
 
-  border: '#E5E5EF',
-  borderStrong: '#D3D3E2',
+  border: Palette.clean,
+  borderStrong: '#CBD5E1',
 
-  // Functional
-  primary: '#1A1B26',
-  accent: '#5B5FEF',
-  accentSoft: '#EEEEFD',
-  success: '#1F9D55',
-  successSoft: '#E3F5EA',
-  warning: '#C77B12',
-  warningSoft: '#FBF0DF',
-  error: '#D8433D',
-  errorSoft: '#FBE8E7',
+  primary: Palette.strength,
+  accent: Palette.sky,
+  accentSoft: '#E6EFFE',
+  community: Palette.community,
+  communitySoft: '#F1EAFE',
+  friendly: Palette.friendly,
+  friendlySoft: '#DDF8FD',
+  bamboo: Palette.bamboo,
+  bambooSoft: '#F5EEE2',
 
-  // Overlays / gradients
-  overlayLight: 'rgba(255,255,255,0.6)',
-  overlayDark: 'rgba(17,17,26,0.55)',
+  success: Palette.forest,
+  successSoft: '#E3F4E8',
+  warning: '#B7791F',
+  warningSoft: '#FBF1DD',
+  error: '#DC2626',
+  errorSoft: '#FDE8E8',
+
+  overlayLight: 'rgba(255,255,255,0.7)',
+  overlayDark: 'rgba(15,23,42,0.55)',
 
   white: '#FFFFFF',
-  black: '#0A0A10',
+  black: '#020617',
 };
 
 export const Gradients = {
-  hero: ['#1A1B26', '#33344A', '#5B5FEF'] as const,
-  card: ['#FFFFFF', '#F4F4FA'] as const,
-  subtle: ['#FFFFFF', '#ECECF7'] as const,
+  brand: [Palette.sky, '#4C62F2', Palette.community] as const,
+  hero: ['#0F172A', '#1E3A8A', Palette.sky] as const,
+  sky: ['#DCEBFF', '#EEF4FC', Palette.mist] as const,
+  card: ['#FFFFFF', '#F6F9FD'] as const,
+  subtle: ['#FFFFFF', '#EEF3FA'] as const,
 };

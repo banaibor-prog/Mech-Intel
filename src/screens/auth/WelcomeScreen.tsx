@@ -16,6 +16,8 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import Button from '../../components/Button';
+import ContourBackdrop from '../../components/brand/ContourBackdrop';
+import GycLockup from '../../components/brand/GycLockup';
 import { Colors } from '../../constants/Colors';
 import { Spacing } from '../../constants/Spacing';
 import { Fonts } from '../../constants/Typography';
@@ -104,26 +106,28 @@ export default function WelcomeScreen(_props: Props) {
   return (
     <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
       <ScrollView
-        contentContainerStyle={[
-          styles.scroll,
-          {
-            paddingTop: insets.top + (compact ? Spacing.xl : Spacing.xxl),
-            paddingBottom: insets.bottom + Spacing.xl,
-          },
-        ]}
+        contentContainerStyle={[styles.scroll, { paddingBottom: insets.bottom + Spacing.xl }]}
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
         bounces={false}>
-        <Animated.View style={introStyle}>
-          <Text style={styles.brand}>Got You Covered</Text>
+        <View style={[styles.hero, { paddingTop: insets.top + (compact ? Spacing.md : Spacing.lg) }]}>
+          <ContourBackdrop style={styles.heroBackdrop} />
+          <Animated.View style={[styles.heroContent, introStyle]}>
+            <View style={styles.greeting}>
+              <Text style={styles.greetingText}>Welcome</Text>
+            </View>
+            <GycLockup logoSize={compact ? 118 : 140} inverted style={styles.lockup} />
+          </Animated.View>
+        </View>
 
+        <Animated.View style={[styles.sheet, introStyle]}>
           <Text style={[styles.title, compact && styles.titleCompact]}>
             {mode === 'signIn' ? 'Sign in' : 'Create account'}
           </Text>
           <Text style={styles.subtitle}>
             {mode === 'signIn'
-              ? 'Welcome back to your work network.'
-              : 'Connect with skilled people near you.'}
+              ? 'Welcome back to your local work network.'
+              : 'Hire and get hired by trusted people across Meghalaya.'}
           </Text>
 
           <View style={styles.form}>
@@ -164,9 +168,10 @@ export default function WelcomeScreen(_props: Props) {
             />
 
             <Button
-              title={loading ? 'Please wait' : mode === 'signIn' ? 'Sign in' : 'Create account'}
+              title={mode === 'signIn' ? 'Sign in' : 'Create account'}
+              icon="arrowRight"
               onPress={handleSubmit}
-              disabled={loading}
+              loading={loading}
               style={styles.submit}
             />
 
@@ -183,6 +188,7 @@ export default function WelcomeScreen(_props: Props) {
                 signInWithGoogle();
               }}
               disabled={googleLoading || loading}
+              loading={googleLoading}
               variant="outline"
             />
 
@@ -214,49 +220,67 @@ function notify(message: string, title = 'Missing info') {
 }
 
 const styles = StyleSheet.create({
-  flex: { flex: 1, backgroundColor: Colors.surface },
-  scroll: {
-    flexGrow: 1,
-    paddingHorizontal: Spacing.lg + 4,
-  },
+  flex: { flex: 1, backgroundColor: Colors.background },
+  scroll: { flexGrow: 1 },
 
-  brand: {
-    fontFamily: Fonts.bodySemibold,
-    fontSize: 12,
-    letterSpacing: 1.6,
-    textTransform: 'uppercase',
-    color: Colors.textMuted,
-    marginBottom: Spacing.xxl,
+  hero: { alignItems: 'center', minHeight: 300 },
+  heroBackdrop: { position: 'absolute', top: 0, left: 0, right: 0, bottom: -40 },
+  heroContent: { alignItems: 'center' },
+  greeting: {
+    backgroundColor: 'rgba(255,255,255,0.08)',
+    borderRadius: 999,
+    paddingHorizontal: 14,
+    paddingVertical: 6,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.14)',
+  },
+  greetingText: { fontFamily: Fonts.bodySemibold, fontSize: 12.5, color: 'rgba(255,255,255,0.8)', letterSpacing: 0.4 },
+  lockup: { marginTop: Spacing.md },
+
+  sheet: {
+    marginTop: -28,
+    backgroundColor: Colors.surface,
+    borderTopLeftRadius: 30,
+    borderTopRightRadius: 30,
+    paddingHorizontal: Spacing.lg,
+    paddingTop: Spacing.lg + 6,
+    flexGrow: 1,
+    overflow: 'hidden',
+    shadowColor: '#1E3A8A',
+    shadowOpacity: 0.08,
+    shadowRadius: 20,
+    shadowOffset: { width: 0, height: -6 },
+    elevation: 6,
   },
 
   title: {
     fontFamily: Fonts.display,
-    fontSize: 30,
-    lineHeight: 36,
+    fontSize: 28,
+    lineHeight: 34,
     letterSpacing: -0.6,
     color: Colors.text,
   },
   titleCompact: {
-    fontSize: 26,
-    lineHeight: 32,
+    fontSize: 24,
+    lineHeight: 30,
   },
   subtitle: {
     fontFamily: Fonts.body,
     fontSize: 14,
     lineHeight: 20,
     color: Colors.textLight,
-    marginTop: Spacing.sm,
+    marginTop: Spacing.xs,
   },
 
   form: {
-    marginTop: Spacing.xl,
+    marginTop: Spacing.lg,
   },
   fieldWrap: { overflow: 'hidden' },
   input: {
-    borderWidth: 1,
+    borderWidth: 1.2,
     borderColor: Colors.border,
-    backgroundColor: Colors.surface,
-    borderRadius: 10,
+    backgroundColor: '#F8FAFD',
+    borderRadius: 14,
     paddingHorizontal: Spacing.md,
     paddingVertical: Spacing.sm + 5,
     fontSize: 15,
@@ -265,7 +289,8 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.sm + 4,
   },
   inputFocused: {
-    borderColor: Colors.ink,
+    borderColor: Colors.accent,
+    backgroundColor: Colors.surface,
   },
 
   submit: {
@@ -307,7 +332,7 @@ const styles = StyleSheet.create({
   footerLink: {
     fontFamily: Fonts.bodySemibold,
     fontSize: 14,
-    color: Colors.text,
+    color: Colors.accent,
     marginLeft: Spacing.xs + 2,
   },
 });

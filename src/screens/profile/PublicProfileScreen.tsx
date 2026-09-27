@@ -1,17 +1,13 @@
 import React, { useEffect, useState } from 'react';
-import {
-  ActivityIndicator,
-  Alert,
-  ScrollView,
-  Share,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
-} from 'react-native';
+import { Alert, ScrollView, Share, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import AppIcon, { AppIconName } from '../../components/AppIcon';
 import Avatar from '../../components/Avatar';
 import Button from '../../components/Button';
+import GycLoader from '../../components/GycLoader';
+import GycLogo from '../../components/brand/GycLogo';
+import Card from '../../components/ui/Card';
+import Chip from '../../components/ui/Chip';
+import TextField from '../../components/ui/TextField';
 import {
   MarketplaceProfileContent,
   ProfileIdentityHeader,
@@ -53,8 +49,8 @@ interface Props {
 }
 
 function currency(value: number): string {
-  if (!value) return 'Rs 0';
-  return `Rs ${value.toLocaleString('en-IN')}`;
+  if (!value) return '₹0';
+  return `₹${value.toLocaleString('en-IN')}`;
 }
 
 function responseLabel(boost: PublicTrustProfile['trust']['responseBoost']): string {
@@ -214,471 +210,306 @@ export default function PublicProfileScreen({ route, navigation }: Props) {
   };
 
   if (loading) {
-    return <ActivityIndicator style={styles.loader} color={Colors.ink} />;
+    return (
+      <View style={styles.center}>
+        <GycLoader size={110} label="Loading profile" />
+      </View>
+    );
   }
 
   if (!profile) {
     return (
-      <View style={styles.emptyContainer}>
+      <View style={styles.center}>
+        <GycLogo size={84} />
         <Text style={styles.emptyText}>This profile is no longer available.</Text>
       </View>
     );
   }
 
   const trust = profile.trust;
+  const openSafety = (form: 'report' | 'block') => {
+    setSafetyReason(null);
+    setSafetyNote('');
+    setActiveForm(form);
+  };
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
+    <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
       <ProfileIdentityHeader user={profile.user} provider={profile.provider} trust={trust} />
+
+      <View style={styles.primaryActions}>
+        {targetIsProvider && !isSelf ? (
+          <Button title="Request booking" icon="calendar" onPress={() => navigation.navigate('ProviderDetail', { uid })} style={styles.flex} />
+        ) : null}
+        <Button title="Share" icon="arrowRight" variant="outline" onPress={shareProfile} style={targetIsProvider && !isSelf ? null : styles.flex} />
+      </View>
+
+      <Card style={styles.trustCard}>
+        <View style={styles.trustRow}>
+          <View style={styles.trustScore}>
+            <Text style={styles.trustValue}>{trust.trustScore}</Text>
+            <Text style={styles.trustMax}>/100</Text>
+          </View>
+          <View style={styles.flex}>
+            <Text style={styles.trustEyebrow}>TRUST SCORE</Text>
+            <Text style={styles.trustLabel}>{responseLabel(trust.responseBoost)}</Text>
+            <Text style={styles.trustMeta}>
+              {trust.referralCount} referrals · {trust.repeatClients} repeat clients
+            </Text>
+          </View>
+        </View>
+        <View style={styles.trustTrack}>
+          <View style={[styles.trustFill, { width: `${Math.max(4, Math.min(100, trust.trustScore))}%` }]} />
+        </View>
+      </Card>
+
+      {trust.reportCount || trust.blockCount ? (
+        <View style={styles.safetyBox}>
+          <AppIcon name="fire" size={18} color={Colors.warning} />
+          <View style={styles.flex}>
+            <Text style={styles.safetyTitle}>Safety signals</Text>
+            <Text style={styles.safetyText}>
+              {trust.reportCount} reports, {trust.blockCount} blocks. Review the history before transacting.
+            </Text>
+          </View>
+        </View>
+      ) : null}
+
       <MarketplaceProfileContent
         user={profile.user}
         provider={profile.provider}
         trust={trust}
         reviews={profile.reviews}
-        onBook={() => navigation.navigate('ProviderDetail', { uid })}
+        onBook={isSelf ? undefined : () => navigation.navigate('ProviderDetail', { uid })}
+        showReviews={false}
       />
 
-      <ProfileSection title="Trust actions">
-      <View style={styles.actionGrid}>
-        <Action label="Share" onPress={shareProfile} />
-        {targetIsProvider ? <Action label="Request booking" onPress={() => navigation.navigate('ProviderDetail', { uid })} /> : null}
-        {!isSelf ? <Action label="Review" onPress={() => setActiveForm('review')} /> : null}
-        {!isSelf ? <Action label="Refer" onPress={() => setActiveForm('refer')} /> : null}
-        {!isSelf ? (
-          <Action
-            label="Report"
-            danger
-            onPress={() => {
-              setSafetyReason(null);
-              setSafetyNote('');
-              setActiveForm('report');
-            }}
-          />
-        ) : null}
-        {!isSelf ? (
-          <Action
-            label="Block"
-            danger
-            onPress={() => {
-              setSafetyReason(null);
-              setSafetyNote('');
-              setActiveForm('block');
-            }}
-          />
-        ) : null}
-      </View>
+      {!isSelf ? (
+        <ProfileSection title="Vouch or flag">
+          <View style={styles.actionGrid}>
+            <Action icon="star" label="Review" active={activeForm === 'review'} onPress={() => setActiveForm(activeForm === 'review' ? null : 'review')} />
+            <Action icon="users" label="Refer" active={activeForm === 'refer'} onPress={() => setActiveForm(activeForm === 'refer' ? null : 'refer')} />
+            <Action icon="bell" label="Report" danger active={activeForm === 'report'} onPress={() => openSafety('report')} />
+            <Action icon="close" label="Block" danger active={activeForm === 'block'} onPress={() => openSafety('block')} />
+          </View>
+
+          {activeForm === 'review' ? (
+            <Card style={styles.form}>
+              <Text style={styles.formTitle}>Post a review</Text>
+              <View style={styles.ratingRow}>
+                {[1, 2, 3, 4, 5].map((value) => (
+                  <TouchableOpacity
+                    key={value}
+                    onPress={() => setRating(value)}
+                    activeOpacity={0.7}
+                    hitSlop={4}
+                    accessibilityRole="button"
+                    accessibilityLabel={`${value} star${value > 1 ? 's' : ''}`}>
+                    <AppIcon name="star" size={30} color={value <= rating ? '#F59E0B' : Colors.borderStrong} />
+                  </TouchableOpacity>
+                ))}
+              </View>
+              <TextField placeholder="Project title" value={projectTitle} onChangeText={setProjectTitle} containerStyle={styles.field} />
+              <TextField placeholder="Amount involved (optional)" keyboardType="numeric" value={amount} onChangeText={setAmount} containerStyle={styles.field} />
+              {!targetIsProvider ? (
+                <TouchableOpacity style={styles.checkRow} onPress={() => setPaymentOnTime((next) => !next)} activeOpacity={0.8}>
+                  <View style={[styles.checkbox, paymentOnTime && styles.checkboxActive]}>
+                    {paymentOnTime ? <AppIcon name="verified" size={12} color={Colors.white} /> : null}
+                  </View>
+                  <Text style={styles.checkText}>Payment was made on time</Text>
+                </TouchableOpacity>
+              ) : null}
+              <TextField placeholder="What should others know?" multiline value={reviewText} onChangeText={setReviewText} containerStyle={styles.field} />
+              <Button title="Post review" onPress={submitReview} loading={saving} style={styles.formButton} />
+            </Card>
+          ) : null}
+
+          {activeForm === 'refer' ? (
+            <Card style={styles.form}>
+              <Text style={styles.formTitle}>Refer this profile</Text>
+              <TextField placeholder="Your relationship, e.g. neighbour in Mawlai" value={referenceRelation} onChangeText={setReferenceRelation} containerStyle={styles.field} />
+              <TextField placeholder="Why would you refer them?" multiline value={referenceText} onChangeText={setReferenceText} containerStyle={styles.field} />
+              <Button title="Add reference" onPress={submitReference} loading={saving} style={styles.formButton} />
+            </Card>
+          ) : null}
+
+          {activeForm === 'report' || activeForm === 'block' ? (
+            <Card style={styles.form}>
+              <Text style={styles.formTitle}>{activeForm === 'report' ? 'Report profile' : 'Block profile'}</Text>
+              <Text style={styles.formLabel}>What's the reason?</Text>
+              <View style={styles.reasonGrid}>
+                {(activeForm === 'report' ? REPORT_REASONS : BLOCK_REASONS).map((reason) => (
+                  <Chip key={reason} label={reason} color={Colors.error} active={safetyReason === reason} onPress={() => setSafetyReason(reason)} />
+                ))}
+              </View>
+              <TextField
+                placeholder={safetyReason === 'Other' ? 'Describe what happened.' : 'Add details (optional).'}
+                multiline
+                value={safetyNote}
+                onChangeText={setSafetyNote}
+                containerStyle={styles.field}
+              />
+              <Button
+                title={activeForm === 'report' ? 'Submit report' : 'Block profile'}
+                variant="dark"
+                onPress={() => submitSafetyAction(activeForm)}
+                loading={saving}
+                style={styles.formButton}
+              />
+            </Card>
+          ) : null}
+        </ProfileSection>
+      ) : null}
+
+      <ProfileSection title={`Reviews (${profile.reviews.length})`}>
+        {profile.reviews.length === 0 ? (
+          <Text style={styles.emptyInline}>No reviews yet.</Text>
+        ) : (
+          profile.reviews.map((review) => (
+            <Card key={review.id} style={styles.historyCard}>
+              <View style={styles.historyHeader}>
+                <Avatar name={review.reviewerName} photoURL={review.reviewerPhotoURL} size={36} />
+                <View style={styles.historyHeaderText}>
+                  <Text style={styles.historyName}>{review.reviewerName}</Text>
+                  <View style={styles.historyMetaRow}>
+                    {[1, 2, 3, 4, 5].map((i) => (
+                      <AppIcon key={i} name="star" size={11} color={i <= review.rating ? '#F59E0B' : Colors.borderStrong} />
+                    ))}
+                    {review.amount ? <Text style={styles.historyMeta}>  ·  {currency(review.amount)}</Text> : null}
+                  </View>
+                </View>
+              </View>
+              {review.projectTitle ? <Text style={styles.projectTitle}>{review.projectTitle}</Text> : null}
+              <Text style={styles.bodyText}>{review.comment}</Text>
+            </Card>
+          ))
+        )}
       </ProfileSection>
 
-      {activeForm === 'review' ? (
-        <View style={styles.form}>
-          <Text style={styles.formTitle}>Post a review</Text>
-          <View style={styles.ratingRow}>
-            {[1, 2, 3, 4, 5].map((value) => (
-              <TouchableOpacity
-                key={value}
-                style={[styles.ratingButton, rating === value && styles.ratingButtonActive]}
-                onPress={() => setRating(value)}
-                activeOpacity={0.8}
-              >
-                <Text style={[styles.ratingText, rating === value && styles.ratingTextActive]}>
-                  {value}
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </View>
-          <TextInput
-            style={styles.input}
-            placeholder="Project title"
-            placeholderTextColor={Colors.textMuted}
-            value={projectTitle}
-            onChangeText={setProjectTitle}
-          />
-          <TextInput
-            style={styles.input}
-            placeholder="Amount involved (optional)"
-            placeholderTextColor={Colors.textMuted}
-            keyboardType="numeric"
-            value={amount}
-            onChangeText={setAmount}
-          />
-          {!targetIsProvider ? (
-            <TouchableOpacity
-              style={styles.checkRow}
-              onPress={() => setPaymentOnTime((next) => !next)}
-              activeOpacity={0.8}
-            >
-              <View style={[styles.checkbox, paymentOnTime && styles.checkboxActive]} />
-              <Text style={styles.checkText}>Payment was made on time</Text>
-            </TouchableOpacity>
-          ) : null}
-          <TextInput
-            style={[styles.input, styles.textArea]}
-            placeholder="What should others know?"
-            placeholderTextColor={Colors.textMuted}
-            multiline
-            value={reviewText}
-            onChangeText={setReviewText}
-          />
-          <Button title={saving ? 'Posting...' : 'Post Review'} onPress={submitReview} disabled={saving} />
-        </View>
-      ) : null}
-
-      {activeForm === 'refer' ? (
-        <View style={styles.form}>
-          <Text style={styles.formTitle}>Refer this profile</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="Your relationship"
-            placeholderTextColor={Colors.textMuted}
-            value={referenceRelation}
-            onChangeText={setReferenceRelation}
-          />
-          <TextInput
-            style={[styles.input, styles.textArea]}
-            placeholder="Why would you refer them?"
-            placeholderTextColor={Colors.textMuted}
-            multiline
-            value={referenceText}
-            onChangeText={setReferenceText}
-          />
-          <Button title={saving ? 'Adding...' : 'Add Reference'} onPress={submitReference} disabled={saving} />
-        </View>
-      ) : null}
-
-      {activeForm === 'report' || activeForm === 'block' ? (
-        <View style={styles.form}>
-          <Text style={styles.formTitle}>{activeForm === 'report' ? 'Report profile' : 'Block profile'}</Text>
-          <Text style={styles.formLabel}>What's the reason?</Text>
-          <View style={styles.reasonGrid}>
-            {(activeForm === 'report' ? REPORT_REASONS : BLOCK_REASONS).map((reason) => (
-              <TouchableOpacity
-                key={reason}
-                style={[styles.reasonChip, safetyReason === reason && styles.reasonChipActive]}
-                onPress={() => setSafetyReason(reason)}
-                activeOpacity={0.8}
-              >
-                <Text
-                  style={[styles.reasonChipText, safetyReason === reason && styles.reasonChipTextActive]}
-                >
-                  {reason}
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </View>
-          <TextInput
-            style={[styles.input, styles.textArea]}
-            placeholder={
-              safetyReason === 'Other'
-                ? 'Describe what happened.'
-                : 'Add details (optional).'
-            }
-            placeholderTextColor={Colors.textMuted}
-            multiline
-            value={safetyNote}
-            onChangeText={setSafetyNote}
-          />
-          <Button
-            title={saving ? 'Saving...' : activeForm === 'report' ? 'Submit Report' : 'Block Profile'}
-            onPress={() => submitSafetyAction(activeForm)}
-            disabled={saving}
-          />
-        </View>
-      ) : null}
-
-      <Text style={styles.sectionTitle}>Reviews</Text>
-      {profile.reviews.length === 0 ? (
-        <Text style={styles.emptyInline}>No reviews yet.</Text>
-      ) : (
-        profile.reviews.map((review) => (
-          <View key={review.id} style={styles.historyCard}>
-            <View style={styles.historyHeader}>
-              <Avatar name={review.reviewerName} photoURL={review.reviewerPhotoURL} size={34} />
-              <View style={styles.historyHeaderText}>
-                <Text style={styles.historyName}>{review.reviewerName}</Text>
-                <Text style={styles.historyMeta}>
-                  {review.rating}/5{review.amount ? `, ${currency(review.amount)}` : ''}
-                </Text>
+      <ProfileSection title={`References (${profile.references.length})`}>
+        {profile.references.length === 0 ? (
+          <Text style={styles.emptyInline}>No references yet.</Text>
+        ) : (
+          profile.references.map((reference) => (
+            <Card key={reference.id} style={styles.historyCard}>
+              <View style={styles.historyHeader}>
+                <Avatar name={reference.fromName} photoURL={reference.fromPhotoURL} size={36} />
+                <View style={styles.historyHeaderText}>
+                  <Text style={styles.historyName}>{reference.fromName}</Text>
+                  <Text style={styles.historyMeta}>
+                    {reference.relationship} · {reference.verified ? 'verified' : 'pending verification'}
+                  </Text>
+                </View>
               </View>
-            </View>
-            {review.projectTitle ? <Text style={styles.projectTitle}>{review.projectTitle}</Text> : null}
-            <Text style={styles.bodyText}>{review.comment}</Text>
-          </View>
-        ))
-      )}
+              <Text style={styles.bodyText}>{reference.note}</Text>
+            </Card>
+          ))
+        )}
+      </ProfileSection>
 
-      <Text style={styles.sectionTitle}>References</Text>
-      {profile.references.length === 0 ? (
-        <Text style={styles.emptyInline}>No references yet.</Text>
-      ) : (
-        profile.references.map((reference) => (
-          <View key={reference.id} style={styles.historyCard}>
-            <View style={styles.historyHeader}>
-              <Avatar name={reference.fromName} photoURL={reference.fromPhotoURL} size={34} />
-              <View style={styles.historyHeaderText}>
-                <Text style={styles.historyName}>{reference.fromName}</Text>
-                <Text style={styles.historyMeta}>
-                  {reference.relationship}{reference.verified ? ', verified' : ', pending verification'}
-                </Text>
-              </View>
-            </View>
-            <Text style={styles.bodyText}>{reference.note}</Text>
-          </View>
-        ))
-      )}
-
-      {trust.reportCount || trust.blockCount ? (
-        <View style={styles.safetyBox}>
-          <Text style={styles.safetyTitle}>Safety signals</Text>
-          <Text style={styles.safetyText}>
-            {trust.reportCount} reports, {trust.blockCount} blocks. Review the history before transacting.
-          </Text>
-        </View>
-      ) : null}
     </ScrollView>
   );
 }
 
 function Action({
+  icon,
   label,
   onPress,
   danger,
+  active,
 }: {
+  icon: AppIconName;
   label: string;
   onPress: () => void;
   danger?: boolean;
+  active?: boolean;
 }) {
+  const color = danger ? Colors.error : Colors.accent;
   return (
     <TouchableOpacity
-      style={[styles.actionButton, danger && styles.actionDanger]}
+      style={[styles.actionButton, active && { borderColor: color, backgroundColor: danger ? Colors.errorSoft : Colors.accentSoft }]}
       activeOpacity={0.8}
       onPress={onPress}
-    >
-      <Text style={[styles.actionText, danger && styles.actionDangerText]}>{label}</Text>
+      accessibilityRole="button"
+      accessibilityState={{ selected: !!active }}>
+      <View style={[styles.actionIcon, { backgroundColor: danger ? Colors.errorSoft : Colors.accentSoft }]}>
+        <AppIcon name={icon} size={16} color={color} />
+      </View>
+      <Text style={[styles.actionText, danger && { color: Colors.error }]}>{label}</Text>
     </TouchableOpacity>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    padding: Spacing.md,
-    paddingBottom: Spacing.xxl + 80,
-    backgroundColor: Colors.background,
-  },
-  loader: {
-    flex: 1,
-    marginTop: Spacing.xxl,
-  },
-  emptyContainer: {
-    flex: 1,
-    backgroundColor: Colors.background,
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: Spacing.lg,
-  },
-  emptyText: {
-    fontFamily: Fonts.body,
-    color: Colors.textLight,
-  },
-  sectionTitle: {
-    fontFamily: Fonts.display,
-    fontSize: 18,
-    color: Colors.text,
-    marginTop: Spacing.xl,
-    marginBottom: Spacing.xs,
-  },
-  bodyText: {
-    fontFamily: Fonts.body,
-    fontSize: 14,
-    color: Colors.textLight,
-    lineHeight: 21,
-  },
-  actionGrid: {
+  container: { padding: Spacing.md, paddingBottom: Spacing.xxl, backgroundColor: Colors.background },
+  flex: { flex: 1 },
+  center: { flex: 1, backgroundColor: Colors.background, alignItems: 'center', justifyContent: 'center', padding: Spacing.lg },
+  emptyText: { fontFamily: Fonts.bodyMedium, color: Colors.textLight, marginTop: Spacing.md },
+  primaryActions: { flexDirection: 'row', gap: 10, marginTop: Spacing.md },
+
+  trustCard: { marginTop: Spacing.md },
+  trustRow: { flexDirection: 'row', alignItems: 'center', gap: 14 },
+  trustScore: { flexDirection: 'row', alignItems: 'flex-end' },
+  trustValue: { fontFamily: Fonts.display, fontSize: 36, color: Colors.text, lineHeight: 40 },
+  trustMax: { fontFamily: Fonts.bodySemibold, fontSize: 13, color: Colors.textMuted, marginBottom: 6, marginLeft: 2 },
+  trustEyebrow: { fontFamily: Fonts.bodyBold, fontSize: 10, letterSpacing: 1.8, color: Colors.accent },
+  trustLabel: { fontFamily: Fonts.bodyBold, fontSize: 14, color: Colors.text, marginTop: 2 },
+  trustMeta: { fontFamily: Fonts.body, fontSize: 12, color: Colors.textLight, marginTop: 2 },
+  trustTrack: { height: 8, borderRadius: 4, backgroundColor: Colors.surfaceAlt, marginTop: 14, overflow: 'hidden' },
+  trustFill: { height: '100%', borderRadius: 4, backgroundColor: Colors.success },
+
+  safetyBox: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: Spacing.sm,
-    marginTop: Spacing.lg,
-  },
-  actionButton: {
-    backgroundColor: Colors.surface,
-    borderWidth: 1,
-    borderColor: Colors.border,
-    borderRadius: 12,
-    paddingVertical: Spacing.sm,
-    paddingHorizontal: Spacing.md,
-  },
-  actionText: {
-    fontFamily: Fonts.bodyBold,
-    color: Colors.text,
-    fontSize: 13,
-  },
-  actionDanger: {
-    backgroundColor: Colors.errorSoft,
-    borderColor: Colors.errorSoft,
-  },
-  actionDangerText: {
-    color: Colors.error,
-  },
-  form: {
-    backgroundColor: Colors.surface,
-    borderWidth: 1,
-    borderColor: Colors.border,
-    borderRadius: 16,
+    gap: 10,
+    backgroundColor: Colors.warningSoft,
+    borderRadius: 18,
     padding: Spacing.md,
     marginTop: Spacing.md,
   },
-  formTitle: {
-    fontFamily: Fonts.bodyBold,
-    color: Colors.text,
-    fontSize: 15,
-    marginBottom: Spacing.sm,
-  },
-  formLabel: {
-    fontFamily: Fonts.bodyMedium,
-    color: Colors.textLight,
-    fontSize: 12,
-    marginBottom: Spacing.xs,
-  },
-  reasonGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: Spacing.xs,
-    marginBottom: Spacing.sm,
-  },
-  reasonChip: {
-    borderWidth: 1,
-    borderColor: Colors.border,
-    backgroundColor: Colors.background,
-    borderRadius: 20,
-    paddingHorizontal: Spacing.sm + 2,
-    paddingVertical: Spacing.xs + 2,
-  },
-  reasonChipActive: {
-    backgroundColor: Colors.error,
-    borderColor: Colors.error,
-  },
-  reasonChipText: {
-    fontFamily: Fonts.bodyMedium,
-    color: Colors.text,
-    fontSize: 12.5,
-  },
-  reasonChipTextActive: {
-    color: Colors.white,
-  },
-  ratingRow: {
-    flexDirection: 'row',
-    gap: Spacing.xs,
-    marginBottom: Spacing.sm,
-  },
-  ratingButton: {
-    width: 38,
-    height: 34,
-    borderRadius: 10,
+  safetyTitle: { fontFamily: Fonts.bodyBold, color: Colors.warning, fontSize: 14 },
+  safetyText: { fontFamily: Fonts.body, color: Colors.textLight, fontSize: 13, lineHeight: 19, marginTop: 3 },
+
+  actionGrid: { flexDirection: 'row', gap: 8 },
+  actionButton: {
+    flex: 1,
     alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: Colors.surfaceAlt,
-  },
-  ratingButtonActive: {
-    backgroundColor: Colors.ink,
-  },
-  ratingText: {
-    fontFamily: Fonts.bodyBold,
-    color: Colors.text,
-  },
-  ratingTextActive: {
-    color: Colors.white,
-  },
-  input: {
-    borderWidth: 1,
+    backgroundColor: Colors.surface,
+    borderWidth: 1.5,
     borderColor: Colors.border,
-    backgroundColor: Colors.background,
-    borderRadius: 12,
-    paddingHorizontal: Spacing.md,
-    paddingVertical: Spacing.sm + 2,
-    fontFamily: Fonts.body,
-    color: Colors.text,
-    marginBottom: Spacing.sm,
+    borderRadius: 18,
+    paddingVertical: 12,
   },
-  textArea: {
-    minHeight: 92,
-    textAlignVertical: 'top',
-  },
-  checkRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: Spacing.sm,
-  },
+  actionIcon: { width: 32, height: 32, borderRadius: 16, alignItems: 'center', justifyContent: 'center', marginBottom: 6 },
+  actionText: { fontFamily: Fonts.bodyBold, color: Colors.text, fontSize: 12.5 },
+
+  form: { marginTop: Spacing.md },
+  formTitle: { fontFamily: Fonts.display, color: Colors.text, fontSize: 16, marginBottom: Spacing.sm },
+  formLabel: { fontFamily: Fonts.bodySemibold, color: Colors.textLight, fontSize: 12.5, marginBottom: Spacing.sm },
+  formButton: { marginTop: Spacing.md },
+  field: { marginTop: 10 },
+  reasonGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+  ratingRow: { flexDirection: 'row', gap: 8, marginBottom: 4 },
+  checkRow: { flexDirection: 'row', alignItems: 'center', marginTop: 12 },
   checkbox: {
-    width: 18,
-    height: 18,
-    borderRadius: 5,
+    width: 20,
+    height: 20,
+    borderRadius: 6,
     borderWidth: 1.5,
     borderColor: Colors.borderStrong,
-    marginRight: Spacing.xs,
-  },
-  checkboxActive: {
-    backgroundColor: Colors.success,
-    borderColor: Colors.success,
-  },
-  checkText: {
-    fontFamily: Fonts.bodyMedium,
-    color: Colors.text,
-    fontSize: 13,
-  },
-  historyCard: {
-    backgroundColor: Colors.surface,
-    borderWidth: 1,
-    borderColor: Colors.border,
-    borderRadius: 16,
-    padding: Spacing.md,
-    marginBottom: Spacing.sm,
-  },
-  historyHeader: {
-    flexDirection: 'row',
+    marginRight: 8,
     alignItems: 'center',
+    justifyContent: 'center',
   },
-  historyHeaderText: {
-    marginLeft: Spacing.sm,
-    flex: 1,
-  },
-  historyName: {
-    fontFamily: Fonts.bodyBold,
-    color: Colors.text,
-    fontSize: 14,
-  },
-  historyMeta: {
-    fontFamily: Fonts.bodyMedium,
-    color: Colors.textLight,
-    fontSize: 11,
-    marginTop: 2,
-  },
-  projectTitle: {
-    fontFamily: Fonts.bodyBold,
-    color: Colors.text,
-    fontSize: 13,
-    marginTop: Spacing.sm,
-    marginBottom: 2,
-  },
-  emptyInline: {
-    fontFamily: Fonts.body,
-    color: Colors.textLight,
-    fontSize: 13,
-  },
-  safetyBox: {
-    backgroundColor: Colors.warningSoft,
-    borderRadius: 14,
-    padding: Spacing.md,
-    marginTop: Spacing.lg,
-  },
-  safetyTitle: {
-    fontFamily: Fonts.bodyBold,
-    color: Colors.warning,
-    fontSize: 14,
-  },
-  safetyText: {
-    fontFamily: Fonts.body,
-    color: Colors.textLight,
-    fontSize: 13,
-    lineHeight: 19,
-    marginTop: 3,
-  },
+  checkboxActive: { backgroundColor: Colors.success, borderColor: Colors.success },
+  checkText: { fontFamily: Fonts.bodyMedium, color: Colors.text, fontSize: 13 },
+
+  historyCard: { marginBottom: 10 },
+  historyHeader: { flexDirection: 'row', alignItems: 'center' },
+  historyHeaderText: { marginLeft: 10, flex: 1 },
+  historyName: { fontFamily: Fonts.bodyBold, color: Colors.text, fontSize: 14 },
+  historyMetaRow: { flexDirection: 'row', alignItems: 'center', gap: 2, marginTop: 3 },
+  historyMeta: { fontFamily: Fonts.bodyMedium, color: Colors.textLight, fontSize: 11.5, marginTop: 2 },
+  projectTitle: { fontFamily: Fonts.bodySemibold, color: Colors.accent, fontSize: 12.5, marginTop: 10 },
+  bodyText: { fontFamily: Fonts.body, fontSize: 13.5, color: Colors.textLight, lineHeight: 20, marginTop: 5 },
+  emptyInline: { fontFamily: Fonts.body, color: Colors.textLight, fontSize: 13 },
 });

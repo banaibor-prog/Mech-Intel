@@ -11,20 +11,42 @@ interface Props {
   providers: ProviderCardModel[];
   onSeeAll: () => void;
   onSelect: (uid: string) => void;
+  title?: string;
+  eyebrow?: string;
 }
 
-export default function ProviderCarousel({ providers, onSeeAll, onSelect }: Props) {
-  return <View style={styles.section}>
-    <View style={styles.header}><SectionHeader title="Providers near you" subtitle={`${providers.length} professionals ready to help`} actionLabel="See all" onAction={onSeeAll} /></View>
-    {providers.length ? <FlatList data={providers.slice(0, 10)} horizontal showsHorizontalScrollIndicator={false} keyExtractor={(item) => item.uid} contentContainerStyle={styles.list} renderItem={({ item }) => <ProviderCard provider={item} onPress={() => onSelect(item.uid)} />} /> : <View style={styles.empty}><Text style={styles.emptyTitle}>Professionals are joining your area</Text><TouchableOpacity onPress={onSeeAll}><Text style={styles.emptyAction}>Expand your search</Text></TouchableOpacity></View>}
-  </View>;
+export default function ProviderCarousel({ providers, onSeeAll, onSelect, title = 'Pros near you', eyebrow }: Props) {
+  return (
+    <View style={styles.section}>
+      <View style={styles.header}>
+        <SectionHeader eyebrow={eyebrow} title={title} actionLabel="See all" onAction={onSeeAll} />
+      </View>
+      {providers.length ? (
+        <FlatList
+          data={providers.slice(0, 10)}
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          keyExtractor={(item) => item.uid}
+          contentContainerStyle={styles.list}
+          renderItem={({ item }) => <ProviderCard provider={item} onPress={() => onSelect(item.uid)} />}
+        />
+      ) : (
+        <View style={styles.empty}>
+          <Text style={styles.emptyTitle}>Professionals are joining your area</Text>
+          <TouchableOpacity onPress={onSeeAll}>
+            <Text style={styles.emptyAction}>Expand your search</Text>
+          </TouchableOpacity>
+        </View>
+      )}
+    </View>
+  );
 }
 
 const styles = StyleSheet.create({
-  section: { marginTop: Spacing.md },
-  header: { paddingHorizontal: Spacing.md, marginBottom: 10 },
-  list: { paddingHorizontal: Spacing.md, gap: 10 },
-  empty: { marginHorizontal: Spacing.md, minHeight: 96, borderRadius: 16, backgroundColor: Colors.surface, borderWidth: 1, borderColor: Colors.border, padding: 16, justifyContent: 'center' },
+  section: { marginTop: 30 },
+  header: { paddingHorizontal: Spacing.md, marginBottom: 14 },
+  list: { paddingHorizontal: Spacing.md, gap: 12, paddingBottom: 12 },
+  empty: { marginHorizontal: Spacing.md, minHeight: 96, borderRadius: 20, backgroundColor: Colors.surface, borderWidth: 1, borderColor: Colors.border, padding: 16, justifyContent: 'center' },
   emptyTitle: { color: Colors.text, fontFamily: Fonts.bodySemibold, fontSize: 14 },
   emptyAction: { color: Colors.accent, fontFamily: Fonts.bodyBold, fontSize: 12, marginTop: 7 },
 });

@@ -1,8 +1,15 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { ActivityIndicator, Alert, Modal, ScrollView, StyleSheet, Switch, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { Alert, Modal, ScrollView, StyleSheet, Switch, Text, TouchableOpacity, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { launchImageLibrary } from 'react-native-image-picker';
 import { useNavigation } from '@react-navigation/native';
+import AppIcon, { AppIconName } from '../../components/AppIcon';
 import Button from '../../components/Button';
+import GycLoader from '../../components/GycLoader';
+import Chip from '../../components/ui/Chip';
+import ScreenHero from '../../components/ui/ScreenHero';
+import TextField from '../../components/ui/TextField';
+import { categoryStyle } from '../../constants/Categories';
 import { MarketplaceProfileContent, ProfileIdentityHeader, ProfileSection, ProfileStrengthCard } from '../../components/MarketplaceProfileSections';
 import { Colors } from '../../constants/Colors';
 import { Spacing } from '../../constants/Spacing';
@@ -11,7 +18,7 @@ import { useAuth } from '../../context/AuthContext';
 import { getPublicTrustProfile, subscribeToBookingsAsCustomer, subscribeToBookingsAsProvider, updateUserProfile, upsertProviderProfile } from '../../services/dataService';
 import { signOut } from '../../services/authService';
 import { uploadProfileImage } from '../../services/imageService';
-import { AvailabilityStatus, PortfolioProject, ProfileService, ProviderProfile, TrustSummary } from '../../types/models';
+import { AvailabilityStatus, PortfolioProject, ProfileService, ProviderProfile, SKILL_CATEGORIES, TrustSummary } from '../../types/models';
 
 type Editor = 'details' | 'skills' | 'services' | 'portfolio' | 'availability' | 'privacy' | null;
 
@@ -36,6 +43,7 @@ function toEditableProvider(provider?: ProviderProfile | null): Omit<ProviderPro
 export default function ProfileScreen() {
   const { user, profile, refreshProfile } = useAuth();
   const navigation = useNavigation<any>();
+  const insets = useSafeAreaInsets();
   const [provider, setProvider] = useState<ProviderProfile | null>(null);
   const [trust, setTrust] = useState<TrustSummary>(EMPTY_TRUST);
   const [reviews, setReviews] = useState<any[]>([]);
@@ -153,45 +161,352 @@ export default function ProfileScreen() {
   const openEditor = (next: Editor) => { if (next === 'details') { setDisplayName(publicUser.displayName); setHeadline(provider?.headline ?? ''); setBio(provider?.bio ?? ''); setLocation(provider?.location ?? publicUser.location ?? ''); setHourlyRate(provider?.hourlyRate?.toString() ?? ''); setYearsExperience(provider?.yearsExperience?.toString() ?? ''); setRadius(provider?.serviceRadiusKm?.toString() ?? ''); setLanguages(provider?.languages?.join(', ') ?? ''); } setEditor(next); };
   const signOutNow = () => Alert.alert('Sign out', 'Are you sure you want to sign out?', [{ text: 'Cancel', style: 'cancel' }, { text: 'Sign out', style: 'destructive', onPress: () => signOut() }]);
 
-  if (loading) return <ProfileSkeleton />;
+  if (loading) return <ProfileSkeleton topInset={insets.top} />;
   return (
     <View style={styles.screen}>
-      <ScrollView ref={scrollRef} contentContainerStyle={styles.container} showsVerticalScrollIndicator={false}>
-        <Text style={styles.screenTitle}>Profile</Text><Text style={styles.screenSubtitle}>Your marketplace identity, services, and hiring activity.</Text>
-        <ProfileIdentityHeader user={publicUser} provider={provider} trust={trust} isOwner onEditPhoto={handlePhoto} onEditProfile={() => openEditor('details')} />
-        <ProfileStrengthCard provider={provider} photoURL={publicUser.photoURL} onEdit={() => openEditor('details')} />
-        <ProfileSection title="My workspace"><View style={styles.workspaceGrid}><WorkspaceTile value={String(providerBookings)} label="job requests" onPress={() => navigation.navigate('BookingsTab')} /><WorkspaceTile value={String(customerBookings)} label="active hires" onPress={() => navigation.navigate('BookingsTab')} /><WorkspaceTile value={provider?.available ? 'On' : 'Off'} label="availability" onPress={() => openEditor('availability')} accent={provider?.available} /><WorkspaceTile value={String(trust.reviewCount)} label="reviews received" onPress={() => scrollRef.current?.scrollToEnd({ animated: true })} /></View><View style={styles.workspaceActions}><TouchableOpacity accessibilityRole="button" style={styles.workspaceAction} onPress={() => navigation.navigate('PublicProfile', { uid: user?.uid })}><Text style={styles.workspaceActionText}>Preview public profile</Text></TouchableOpacity><TouchableOpacity accessibilityRole="button" style={styles.workspaceAction} onPress={() => openEditor('privacy')}><Text style={styles.workspaceActionText}>Privacy settings</Text></TouchableOpacity></View></ProfileSection>
-        {!provider ? <View style={styles.startCard}><Text style={styles.startTitle}>Ready to offer your services?</Text><Text style={styles.startText}>Add your skills and a first service. You can still hire people from the same account.</Text><Button title="Set up my services" onPress={() => openEditor('details')} style={styles.startButton} textStyle={styles.startButtonText} /></View> : null}
-        <MarketplaceProfileContent user={publicUser} provider={provider} trust={trust} reviews={reviews} isOwner onEdit={(section) => openEditor(section)} />
-        {profile?.isAdmin ? <TouchableOpacity accessibilityRole="button" style={styles.workspaceAction} onPress={() => navigation.navigate('Moderation')}><Text style={styles.workspaceActionText}>Moderation queue</Text></TouchableOpacity> : null}
-        <TouchableOpacity accessibilityRole="button" style={styles.signOut} onPress={signOutNow}><Text style={styles.signOutText}>Sign out</Text></TouchableOpacity>
+      <ScrollView
+        ref={scrollRef}
+        contentContainerStyle={{ paddingBottom: insets.bottom + Spacing.xl }}
+        showsVerticalScrollIndicator={false}>
+        <ScreenHero
+          topInset={insets.top}
+          eyebrow="Your space"
+          title="Profile"
+          subtitle="Your marketplace identity, services and hiring activity."
+          height={150}
+          right={<BackButton onPress={() => navigation.goBack()} />}
+        />
+        <View style={styles.body}>
+          <ProfileIdentityHeader user={publicUser} provider={provider} trust={trust} isOwner onEditPhoto={handlePhoto} onEditProfile={() => openEditor('details')} />
+          <ProfileStrengthCard provider={provider} photoURL={publicUser.photoURL} onEdit={() => openEditor('details')} />
+
+          <ProfileSection title="My workspace">
+            <View style={styles.workspaceGrid}>
+              <WorkspaceTile icon="briefcase" color={Colors.accent} value={String(providerBookings)} label="job requests" onPress={() => navigation.navigate('BookingsTab')} />
+              <WorkspaceTile icon="users" color={Colors.community} value={String(customerBookings)} label="active hires" onPress={() => navigation.navigate('BookingsTab')} />
+              <WorkspaceTile
+                icon="clock"
+                color={provider?.available ? Colors.success : Colors.textMuted}
+                value={provider?.available ? 'On' : 'Off'}
+                label="availability"
+                onPress={() => openEditor('availability')}
+              />
+              <WorkspaceTile icon="star" color="#F59E0B" value={String(trust.reviewCount)} label="reviews received" onPress={() => scrollRef.current?.scrollToEnd({ animated: true })} />
+            </View>
+            <View style={styles.workspaceActions}>
+              <Button title="Public profile" icon="user" variant="outline" size="sm" onPress={() => navigation.navigate('PublicProfile', { uid: user?.uid })} style={styles.flex} />
+              <Button title="Privacy" icon="verified" variant="outline" size="sm" onPress={() => openEditor('privacy')} style={styles.flex} />
+            </View>
+          </ProfileSection>
+
+          {!provider ? (
+            <View style={styles.startCard}>
+              <View style={styles.startIcon}>
+                <AppIcon name="map" size={20} color={Colors.white} />
+              </View>
+              <Text style={styles.startTitle}>Ready to offer your services?</Text>
+              <Text style={styles.startText}>
+                Add your skills and a first service to appear on the Explore map. You can still hire people from the same account.
+              </Text>
+              <Button title="Set up my services" icon="arrowRight" onPress={() => openEditor('details')} style={styles.startButton} />
+            </View>
+          ) : null}
+
+          <MarketplaceProfileContent user={publicUser} provider={provider} trust={trust} reviews={reviews} isOwner onEdit={(section) => openEditor(section)} />
+
+          {profile?.isAdmin ? (
+            <Button title="Moderation queue" icon="verified" variant="dark" onPress={() => navigation.navigate('Moderation')} style={styles.adminButton} />
+          ) : null}
+          <TouchableOpacity accessibilityRole="button" style={styles.signOut} onPress={signOutNow}>
+            <Text style={styles.signOutText}>Sign out</Text>
+          </TouchableOpacity>
+        </View>
       </ScrollView>
       <ProfileEditor editor={editor} saving={saving} provider={provider} displayName={displayName} setDisplayName={setDisplayName} headline={headline} setHeadline={setHeadline} bio={bio} setBio={setBio} location={location} setLocation={setLocation} hourlyRate={hourlyRate} setHourlyRate={setHourlyRate} yearsExperience={yearsExperience} setYearsExperience={setYearsExperience} radius={radius} setRadius={setRadius} languages={languages} setLanguages={setLanguages} serviceTitle={serviceTitle} setServiceTitle={setServiceTitle} serviceDescription={serviceDescription} setServiceDescription={setServiceDescription} servicePrice={servicePrice} setServicePrice={setServicePrice} portfolioTitle={portfolioTitle} setPortfolioTitle={setPortfolioTitle} portfolioDescription={portfolioDescription} setPortfolioDescription={setPortfolioDescription} portfolioSkills={portfolioSkills} setPortfolioSkills={setPortfolioSkills} onClose={() => setEditor(null)} onSaveDetails={saveDetails} onToggleSkill={toggleSkill} onAddService={addService} onAddPortfolio={addPortfolio} onSelectAvailability={setAvailability} onSavePrivacy={async (showPricing) => { await persistProvider({ privacy: { ...(provider?.privacy ?? {}), showPricing } }); setEditor(null); }} />
     </View>
   );
 }
 
-function WorkspaceTile({ value, label, onPress, accent }: { value: string; label: string; onPress: () => void; accent?: boolean }) { return <TouchableOpacity accessibilityRole="button" style={styles.workspaceTile} onPress={onPress}><Text style={[styles.workspaceValue, accent && styles.workspaceValueAccent]}>{value}</Text><Text style={styles.workspaceLabel}>{label}</Text></TouchableOpacity>; }
+function BackButton({ onPress }: { onPress: () => void }) {
+  return (
+    <TouchableOpacity accessibilityRole="button" accessibilityLabel="Back" onPress={onPress} style={styles.backButton} hitSlop={8}>
+      <View style={styles.backIcon}>
+        <AppIcon name="arrowRight" size={17} color={Colors.white} />
+      </View>
+    </TouchableOpacity>
+  );
+}
+
+function WorkspaceTile({ icon, color, value, label, onPress }: { icon: AppIconName; color: string; value: string; label: string; onPress: () => void }) {
+  return (
+    <TouchableOpacity accessibilityRole="button" activeOpacity={0.8} style={styles.workspaceTile} onPress={onPress}>
+      <View style={styles.workspaceIcon}>
+        <AppIcon name={icon} size={16} color={Colors.text} />
+      </View>
+      <Text style={styles.workspaceValue}>{value}</Text>
+      <Text style={styles.workspaceLabel}>{label}</Text>
+    </TouchableOpacity>
+  );
+}
 
 interface EditorProps { editor: Editor; saving: boolean; provider: ProviderProfile | null; displayName: string; setDisplayName: (value: string) => void; headline: string; setHeadline: (value: string) => void; bio: string; setBio: (value: string) => void; location: string; setLocation: (value: string) => void; hourlyRate: string; setHourlyRate: (value: string) => void; yearsExperience: string; setYearsExperience: (value: string) => void; radius: string; setRadius: (value: string) => void; languages: string; setLanguages: (value: string) => void; serviceTitle: string; setServiceTitle: (value: string) => void; serviceDescription: string; setServiceDescription: (value: string) => void; servicePrice: string; setServicePrice: (value: string) => void; portfolioTitle: string; setPortfolioTitle: (value: string) => void; portfolioDescription: string; setPortfolioDescription: (value: string) => void; portfolioSkills: string; setPortfolioSkills: (value: string) => void; onClose: () => void; onSaveDetails: () => void; onToggleSkill: (skill: string) => void; onAddService: () => void; onAddPortfolio: () => void; onSelectAvailability: (value: AvailabilityStatus) => void; onSavePrivacy: (showPricing: boolean) => Promise<void>; }
 
+const EDITOR_TITLES: Record<Exclude<Editor, null>, string> = {
+  details: 'Edit profile',
+  skills: 'Manage skills',
+  services: 'Add a service',
+  portfolio: 'Add portfolio work',
+  availability: 'Set availability',
+  privacy: 'Privacy settings',
+};
+
 function ProfileEditor(props: EditorProps) {
+  const insets = useSafeAreaInsets();
   const [showPricing, setShowPricing] = useState(props.provider?.privacy?.showPricing ?? true);
   useEffect(() => setShowPricing(props.provider?.privacy?.showPricing ?? true), [props.editor, props.provider?.privacy?.showPricing]);
   if (!props.editor) return null;
-  const title = props.editor === 'details' ? 'Edit profile' : props.editor === 'skills' ? 'Manage skills' : props.editor === 'services' ? 'Add a service' : props.editor === 'portfolio' ? 'Add portfolio work' : props.editor === 'availability' ? 'Set availability' : 'Privacy settings';
-  return <Modal visible transparent animationType="slide" onRequestClose={props.onClose}><View style={styles.modalBackdrop}><View style={styles.sheet}><View style={styles.sheetHeader}><View><Text style={styles.sheetTitle}>{title}</Text><Text style={styles.sheetHint}>Changes are saved to your marketplace profile.</Text></View><TouchableOpacity accessibilityRole="button" onPress={props.onClose} style={styles.closeButton}><Text style={styles.closeText}>Close</Text></TouchableOpacity></View><ScrollView keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>{props.editor === 'details' ? <DetailsForm {...props} /> : null}{props.editor === 'skills' ? <SkillsForm provider={props.provider} saving={props.saving} onToggle={props.onToggleSkill} /> : null}{props.editor === 'services' ? <ServiceForm {...props} /> : null}{props.editor === 'portfolio' ? <PortfolioForm {...props} /> : null}{props.editor === 'availability' ? <AvailabilityForm saving={props.saving} provider={props.provider} onSelect={props.onSelectAvailability} /> : null}{props.editor === 'privacy' ? <PrivacyForm showPricing={showPricing} setShowPricing={setShowPricing} saving={props.saving} onSave={() => props.onSavePrivacy(showPricing)} /> : null}</ScrollView></View></View></Modal>;
+  return (
+    <Modal visible transparent animationType="slide" onRequestClose={props.onClose}>
+      <View style={styles.modalBackdrop}>
+        <View style={[styles.sheet, { paddingBottom: insets.bottom + Spacing.lg }]}>
+          <View style={styles.sheetGrip} />
+          <View style={styles.sheetHeader}>
+            <View style={styles.flex}>
+              <Text style={styles.sheetTitle}>{EDITOR_TITLES[props.editor]}</Text>
+              <Text style={styles.sheetHint}>Changes are saved to your marketplace profile.</Text>
+            </View>
+            <TouchableOpacity accessibilityRole="button" accessibilityLabel="Close" onPress={props.onClose} style={styles.closeButton} hitSlop={8}>
+              <AppIcon name="close" size={16} color={Colors.text} />
+            </TouchableOpacity>
+          </View>
+          <ScrollView keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
+            {props.editor === 'details' ? <DetailsForm {...props} /> : null}
+            {props.editor === 'skills' ? <SkillsForm provider={props.provider} saving={props.saving} onToggle={props.onToggleSkill} /> : null}
+            {props.editor === 'services' ? <ServiceForm {...props} /> : null}
+            {props.editor === 'portfolio' ? <PortfolioForm {...props} /> : null}
+            {props.editor === 'availability' ? <AvailabilityForm saving={props.saving} provider={props.provider} onSelect={props.onSelectAvailability} /> : null}
+            {props.editor === 'privacy' ? <PrivacyForm showPricing={showPricing} setShowPricing={setShowPricing} saving={props.saving} onSave={() => props.onSavePrivacy(showPricing)} /> : null}
+          </ScrollView>
+        </View>
+      </View>
+    </Modal>
+  );
 }
 
-function DetailsForm(props: EditorProps) { return <><Field label="Name" value={props.displayName} onChangeText={props.setDisplayName} placeholder="Your public name" /><Field label="Professional headline" value={props.headline} onChangeText={props.setHeadline} placeholder="Electrician | Smart home installer" /><Field label="About you" value={props.bio} onChangeText={props.setBio} placeholder="Describe your experience and the work you do." multiline /><Field label="Service location" value={props.location} onChangeText={props.setLocation} placeholder="City or area only" /><View style={styles.formRow}><Field label="Hourly rate (Rs)" value={props.hourlyRate} onChangeText={props.setHourlyRate} placeholder="Optional" keyboardType="numeric" compact /><Field label="Experience (years)" value={props.yearsExperience} onChangeText={props.setYearsExperience} placeholder="Optional" keyboardType="numeric" compact /></View><View style={styles.formRow}><Field label="Service radius (km)" value={props.radius} onChangeText={props.setRadius} placeholder="25" keyboardType="numeric" compact /><Field label="Languages" value={props.languages} onChangeText={props.setLanguages} placeholder="English, Hindi" compact /></View><Button title={props.saving ? 'Saving...' : 'Save profile'} onPress={props.onSaveDetails} disabled={props.saving} style={styles.sheetButton} /></>; }
-function SkillsForm({ provider, saving, onToggle }: { provider: ProviderProfile | null; saving: boolean; onToggle: (skill: string) => void }) { const skills = ['Electrician', 'Plumber', 'House Cleaner', 'Carpenter', 'Painter', 'Mechanic', 'Gardener', 'Cook', 'Photographer', 'Tutor', 'Freelance Designer', 'Freelance Developer']; return <View style={styles.skillPicker}>{skills.map((skill) => { const selected = provider?.skills.includes(skill); return <TouchableOpacity key={skill} disabled={saving} onPress={() => onToggle(skill)} style={[styles.skillOption, selected && styles.skillOptionActive]}><Text style={[styles.skillOptionText, selected && styles.skillOptionTextActive]}>{selected ? 'Selected  ' : ''}{skill}</Text></TouchableOpacity>; })}</View>; }
-function ServiceForm(props: EditorProps) { return <><Field label="Service name" value={props.serviceTitle} onChangeText={props.setServiceTitle} placeholder="Home electrical inspection" /><Field label="What is included" value={props.serviceDescription} onChangeText={props.setServiceDescription} placeholder="Describe the outcome customers can expect." multiline /><Field label="Starting price (Rs)" value={props.servicePrice} onChangeText={props.setServicePrice} placeholder="Leave blank for request quote" keyboardType="numeric" /><Button title={props.saving ? 'Adding...' : 'Add service'} onPress={props.onAddService} disabled={props.saving} style={styles.sheetButton} /></>; }
-function PortfolioForm(props: EditorProps) { return <><Field label="Project title" value={props.portfolioTitle} onChangeText={props.setPortfolioTitle} placeholder="Residential smart home installation" /><Field label="Project description" value={props.portfolioDescription} onChangeText={props.setPortfolioDescription} placeholder="What did you deliver and what made it successful?" multiline /><Field label="Skills used" value={props.portfolioSkills} onChangeText={props.setPortfolioSkills} placeholder="Electrical wiring, IoT" /><Button title={props.saving ? 'Adding...' : 'Add portfolio work'} onPress={props.onAddPortfolio} disabled={props.saving} style={styles.sheetButton} /></>; }
-function AvailabilityForm({ provider, saving, onSelect }: { provider: ProviderProfile | null; saving: boolean; onSelect: (value: AvailabilityStatus) => void }) { const current = provider?.availabilityStatus ?? 'away'; return <View style={styles.availabilityPicker}>{AVAILABILITY_OPTIONS.map((option) => <TouchableOpacity key={option.value} disabled={saving} style={[styles.availabilityOption, current === option.value && styles.availabilityOptionActive]} onPress={() => onSelect(option.value)}><View><Text style={styles.availabilityOptionTitle}>{option.label}</Text><Text style={styles.availabilityOptionDescription}>{option.description}</Text></View><Text style={styles.choiceMark}>{current === option.value ? 'Selected' : ''}</Text></TouchableOpacity>)}</View>; }
-function PrivacyForm({ showPricing, setShowPricing, saving, onSave }: { showPricing: boolean; setShowPricing: (value: boolean) => void; saving: boolean; onSave: () => void }) { return <><View style={styles.privacyRow}><View><Text style={styles.privacyTitle}>Show pricing publicly</Text><Text style={styles.privacyText}>Customers can see your hourly and service pricing.</Text></View><Switch value={showPricing} onValueChange={setShowPricing} trackColor={{ false: Colors.borderStrong, true: Colors.accentSoft }} thumbColor={showPricing ? Colors.accent : Colors.surface} /></View><Text style={styles.privacyNote}>Phone number, email, and exact address remain private by default.</Text><Button title={saving ? 'Saving...' : 'Save privacy'} onPress={onSave} disabled={saving} style={styles.sheetButton} /></>; }
-function Field({ label, compact, multiline, ...input }: { label: string; compact?: boolean; multiline?: boolean; value: string; onChangeText: (value: string) => void; placeholder: string; keyboardType?: 'default' | 'numeric' }) { return <View style={[styles.field, compact && styles.fieldCompact]}><Text style={styles.fieldLabel}>{label}</Text><TextInput {...input} multiline={multiline} textAlignVertical={multiline ? 'top' : 'center'} style={[styles.fieldInput, multiline && styles.fieldInputMultiline]} placeholderTextColor={Colors.textMuted} /></View>; }
-function ProfileSkeleton() { return <View style={styles.skeletonScreen}><View style={styles.skeletonTitle} /><View style={styles.skeletonCard} /><View style={styles.skeletonCardSmall} /><View style={styles.skeletonCard} /></View>; }
+function DetailsForm(props: EditorProps) {
+  return (
+    <>
+      <Field label="Name" value={props.displayName} onChangeText={props.setDisplayName} placeholder="Your public name" />
+      <Field label="Professional headline" value={props.headline} onChangeText={props.setHeadline} placeholder="Electrician · Smart home installer" />
+      <Field label="About you" value={props.bio} onChangeText={props.setBio} placeholder="Describe your experience and the work you do." multiline />
+      <Field label="Service location" value={props.location} onChangeText={props.setLocation} placeholder="Locality only, e.g. Laitumkhrah, Shillong" />
+      <View style={styles.formRow}>
+        <Field label="Hourly rate (₹)" value={props.hourlyRate} onChangeText={props.setHourlyRate} placeholder="Optional" keyboardType="numeric" compact />
+        <Field label="Experience (years)" value={props.yearsExperience} onChangeText={props.setYearsExperience} placeholder="Optional" keyboardType="numeric" compact />
+      </View>
+      <View style={styles.formRow}>
+        <Field label="Service radius (km)" value={props.radius} onChangeText={props.setRadius} placeholder="25" keyboardType="numeric" compact />
+        <Field label="Languages" value={props.languages} onChangeText={props.setLanguages} placeholder="Khasi, English" compact />
+      </View>
+      <Button title="Save profile" onPress={props.onSaveDetails} loading={props.saving} style={styles.sheetButton} />
+    </>
+  );
+}
+
+function SkillsForm({ provider, saving, onToggle }: { provider: ProviderProfile | null; saving: boolean; onToggle: (skill: string) => void }) {
+  return (
+    <>
+      <Text style={styles.formHint}>Your skills decide which jobs and hotspot zones you see on the Explore map.</Text>
+      <View style={styles.skillPicker}>
+        {SKILL_CATEGORIES.filter((skill) => skill !== 'Other').map((skill) => {
+          const cat = categoryStyle(skill);
+          return (
+            <Chip
+              key={skill}
+              label={skill}
+              icon={cat.icon}
+             
+              active={provider?.skills.includes(skill)}
+              onPress={saving ? undefined : () => onToggle(skill)}
+            />
+          );
+        })}
+      </View>
+    </>
+  );
+}
+
+function ServiceForm(props: EditorProps) {
+  return (
+    <>
+      <Field label="Service name" value={props.serviceTitle} onChangeText={props.setServiceTitle} placeholder="Home electrical inspection" />
+      <Field label="What is included" value={props.serviceDescription} onChangeText={props.setServiceDescription} placeholder="Describe the outcome customers can expect." multiline />
+      <Field label="Starting price (₹)" value={props.servicePrice} onChangeText={props.setServicePrice} placeholder="Leave blank for request quote" keyboardType="numeric" />
+      <Button title="Add service" icon="plus" onPress={props.onAddService} loading={props.saving} style={styles.sheetButton} />
+    </>
+  );
+}
+
+function PortfolioForm(props: EditorProps) {
+  return (
+    <>
+      <Field label="Project title" value={props.portfolioTitle} onChangeText={props.setPortfolioTitle} placeholder="Bamboo verandah restoration" />
+      <Field label="Project description" value={props.portfolioDescription} onChangeText={props.setPortfolioDescription} placeholder="What did you deliver and what made it successful?" multiline />
+      <Field label="Skills used" value={props.portfolioSkills} onChangeText={props.setPortfolioSkills} placeholder="Carpenter, Painter" />
+      <Button title="Add portfolio work" icon="plus" onPress={props.onAddPortfolio} loading={props.saving} style={styles.sheetButton} />
+    </>
+  );
+}
+
+function AvailabilityForm({ provider, saving, onSelect }: { provider: ProviderProfile | null; saving: boolean; onSelect: (value: AvailabilityStatus) => void }) {
+  const current = provider?.availabilityStatus ?? 'away';
+  return (
+    <View style={styles.availabilityPicker}>
+      {AVAILABILITY_OPTIONS.map((option) => {
+        const selected = current === option.value;
+        const color = option.value === 'away' ? Colors.textMuted : option.value === 'availableThisWeek' ? Colors.warning : Colors.success;
+        return (
+          <TouchableOpacity
+            key={option.value}
+            disabled={saving}
+            activeOpacity={0.8}
+            style={[styles.availabilityOption, selected && styles.availabilityOptionActive]}
+            onPress={() => onSelect(option.value)}>
+            <View style={[styles.availabilityDot, { backgroundColor: color }]} />
+            <View style={styles.flex}>
+              <Text style={styles.availabilityOptionTitle}>{option.label}</Text>
+              <Text style={styles.availabilityOptionDescription}>{option.description}</Text>
+            </View>
+            <View style={[styles.radio, selected && styles.radioActive]}>{selected ? <View style={styles.radioInner} /> : null}</View>
+          </TouchableOpacity>
+        );
+      })}
+      <Text style={styles.formHint}>While you are available, your approximate location shows as a pin on the Explore map.</Text>
+    </View>
+  );
+}
+
+function PrivacyForm({ showPricing, setShowPricing, saving, onSave }: { showPricing: boolean; setShowPricing: (value: boolean) => void; saving: boolean; onSave: () => void }) {
+  return (
+    <>
+      <View style={styles.privacyRow}>
+        <View style={styles.flex}>
+          <Text style={styles.privacyTitle}>Show pricing publicly</Text>
+          <Text style={styles.privacyText}>Customers can see your hourly and service pricing.</Text>
+        </View>
+        <Switch value={showPricing} onValueChange={setShowPricing} trackColor={{ false: Colors.borderStrong, true: Colors.accentSoft }} thumbColor={showPricing ? Colors.accent : Colors.surface} />
+      </View>
+      <Text style={styles.formHint}>
+        Phone number, email and exact address stay private. On the map your location is rounded to about 100 m.
+      </Text>
+      <Button title="Save privacy" onPress={onSave} loading={saving} style={styles.sheetButton} />
+    </>
+  );
+}
+
+function Field({ label, compact, multiline, ...input }: { label: string; compact?: boolean; multiline?: boolean; value: string; onChangeText: (value: string) => void; placeholder: string; keyboardType?: 'default' | 'numeric' }) {
+  return <TextField label={label} multiline={multiline} containerStyle={[styles.field, compact && styles.fieldCompact]} style={multiline ? styles.fieldMultiline : null} {...input} />;
+}
+
+function ProfileSkeleton({ topInset }: { topInset: number }) {
+  return (
+    <View style={styles.screen}>
+      <ScreenHero topInset={topInset} eyebrow="Your space" title="Profile" height={150} />
+      <View style={styles.skeletonBody}>
+        <GycLoader size={120} label="Loading your profile" />
+      </View>
+    </View>
+  );
+}
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: Colors.background }, container: { padding: Spacing.md, paddingTop: Spacing.xl, paddingBottom: Spacing.xxl + 90 }, screenTitle: { color: Colors.text, fontFamily: Fonts.display, fontSize: 28 }, screenSubtitle: { color: Colors.textLight, fontFamily: Fonts.body, fontSize: 13, lineHeight: 19, marginTop: 4, marginBottom: Spacing.md }, workspaceGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 }, workspaceTile: { width: '48.6%', backgroundColor: Colors.surface, borderWidth: 1, borderColor: Colors.border, borderRadius: 12, padding: 12, minHeight: 76 }, workspaceValue: { color: Colors.text, fontFamily: Fonts.displaySemibold, fontSize: 18 }, workspaceValueAccent: { color: Colors.success }, workspaceLabel: { color: Colors.textLight, fontFamily: Fonts.bodyMedium, fontSize: 11, marginTop: 4 }, workspaceActions: { flexDirection: 'row', gap: 8, marginTop: 8 }, workspaceAction: { flex: 1, minHeight: 42, borderRadius: 10, backgroundColor: Colors.surfaceAlt, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 8 }, workspaceActionText: { color: Colors.text, fontFamily: Fonts.bodyBold, fontSize: 12, textAlign: 'center' }, startCard: { backgroundColor: Colors.ink, borderRadius: 16, padding: Spacing.md, marginTop: Spacing.lg }, startTitle: { color: Colors.white, fontFamily: Fonts.displaySemibold, fontSize: 18 }, startText: { color: 'rgba(255,255,255,0.72)', fontFamily: Fonts.body, fontSize: 13, lineHeight: 19, marginTop: 6 }, startButton: { backgroundColor: Colors.white, marginTop: 14 }, startButtonText: { color: Colors.ink }, signOut: { alignItems: 'center', paddingVertical: Spacing.lg, marginTop: Spacing.xl }, signOutText: { color: Colors.error, fontFamily: Fonts.bodyBold, fontSize: 13 }, modalBackdrop: { flex: 1, backgroundColor: 'rgba(10,10,16,0.42)', justifyContent: 'flex-end' }, sheet: { maxHeight: '88%', backgroundColor: Colors.background, borderTopLeftRadius: 22, borderTopRightRadius: 22, padding: Spacing.md, paddingBottom: Spacing.xl }, sheetHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', borderBottomWidth: 1, borderColor: Colors.border, paddingBottom: 12, marginBottom: 8 }, sheetTitle: { color: Colors.text, fontFamily: Fonts.display, fontSize: 20 }, sheetHint: { color: Colors.textLight, fontFamily: Fonts.body, fontSize: 12, marginTop: 3 }, closeButton: { paddingHorizontal: 8, paddingVertical: 6 }, closeText: { color: Colors.accent, fontFamily: Fonts.bodyBold, fontSize: 12 }, field: { marginTop: 12 }, fieldCompact: { flex: 1, minWidth: 0 }, fieldLabel: { color: Colors.textLight, fontFamily: Fonts.bodySemibold, fontSize: 12, marginBottom: 6 }, fieldInput: { minHeight: 46, backgroundColor: Colors.surface, borderWidth: 1, borderColor: Colors.border, borderRadius: 11, color: Colors.text, paddingHorizontal: 12, fontFamily: Fonts.body, fontSize: 14 }, fieldInputMultiline: { minHeight: 92, paddingTop: 12 }, formRow: { flexDirection: 'row', gap: 10 }, sheetButton: { marginTop: Spacing.lg }, skillPicker: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, paddingTop: 8 }, skillOption: { backgroundColor: Colors.surface, borderWidth: 1, borderColor: Colors.border, borderRadius: 10, paddingVertical: 10, paddingHorizontal: 11 }, skillOptionActive: { backgroundColor: Colors.accentSoft, borderColor: Colors.accent }, skillOptionText: { color: Colors.textLight, fontFamily: Fonts.bodySemibold, fontSize: 12 }, skillOptionTextActive: { color: Colors.accent, fontFamily: Fonts.bodyBold, fontSize: 12 }, availabilityPicker: { gap: 8, marginTop: 6 }, availabilityOption: { backgroundColor: Colors.surface, borderWidth: 1, borderColor: Colors.border, borderRadius: 12, padding: 13, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }, availabilityOptionActive: { borderColor: Colors.accent, backgroundColor: Colors.accentSoft }, availabilityOptionTitle: { color: Colors.text, fontFamily: Fonts.bodyBold, fontSize: 14 }, availabilityOptionDescription: { color: Colors.textLight, fontFamily: Fonts.body, fontSize: 12, marginTop: 3 }, choiceMark: { color: Colors.accent, fontFamily: Fonts.bodyBold, fontSize: 11 }, privacyRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', backgroundColor: Colors.surface, borderWidth: 1, borderColor: Colors.border, borderRadius: 12, padding: 13, marginTop: 8 }, privacyTitle: { color: Colors.text, fontFamily: Fonts.bodyBold, fontSize: 14 }, privacyText: { color: Colors.textLight, fontFamily: Fonts.body, fontSize: 12, marginTop: 3, maxWidth: 235 }, privacyNote: { color: Colors.textLight, fontFamily: Fonts.body, fontSize: 12, lineHeight: 18, marginTop: 12 }, skeletonScreen: { flex: 1, backgroundColor: Colors.background, padding: Spacing.md, paddingTop: Spacing.xl }, skeletonTitle: { width: 110, height: 28, borderRadius: 8, backgroundColor: Colors.surfaceAlt }, skeletonCard: { height: 182, borderRadius: 16, backgroundColor: Colors.surfaceAlt, marginTop: Spacing.md }, skeletonCardSmall: { height: 112, borderRadius: 16, backgroundColor: Colors.surfaceAlt, marginTop: Spacing.md },
+  screen: { flex: 1, backgroundColor: Colors.background },
+  flex: { flex: 1 },
+  backButton: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    backgroundColor: 'rgba(255,255,255,0.08)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.14)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  backIcon: { transform: [{ rotate: '180deg' }] },
+  body: { paddingHorizontal: Spacing.md, marginTop: -Spacing.sm },
+  workspaceGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
+  workspaceTile: {
+    width: '48.4%',
+    backgroundColor: Colors.surface,
+    borderWidth: 1,
+    borderColor: Colors.border,
+    borderRadius: 18,
+    padding: 14,
+  },
+  workspaceIcon: { width: 32, height: 32, borderRadius: 10, alignItems: 'center', justifyContent: 'center', marginBottom: 10, backgroundColor: '#F1F5F9' },
+  workspaceValue: { color: Colors.text, fontFamily: Fonts.display, fontSize: 20 },
+  workspaceLabel: { color: Colors.textLight, fontFamily: Fonts.bodyMedium, fontSize: 11.5, marginTop: 2 },
+  workspaceActions: { flexDirection: 'row', gap: 10, marginTop: 10 },
+  startCard: { borderRadius: 24, padding: Spacing.lg - 4, marginTop: Spacing.lg, overflow: 'hidden', backgroundColor: Colors.ink },
+  startIcon: { width: 40, height: 40, borderRadius: 14, backgroundColor: 'rgba(255,255,255,0.14)', alignItems: 'center', justifyContent: 'center', marginBottom: 12 },
+  startTitle: { color: Colors.white, fontFamily: Fonts.display, fontSize: 19 },
+  startText: { color: 'rgba(255,255,255,0.76)', fontFamily: Fonts.body, fontSize: 13, lineHeight: 19, marginTop: 6 },
+  startButton: { marginTop: 16 },
+  adminButton: { marginTop: Spacing.lg },
+  signOut: { alignItems: 'center', paddingVertical: Spacing.lg, marginTop: Spacing.sm },
+  signOutText: { color: Colors.error, fontFamily: Fonts.bodyBold, fontSize: 13.5 },
+
+  modalBackdrop: { flex: 1, backgroundColor: 'rgba(15,23,42,0.45)', justifyContent: 'flex-end' },
+  sheet: {
+    maxHeight: '88%',
+    backgroundColor: Colors.background,
+    borderTopLeftRadius: 28,
+    borderTopRightRadius: 28,
+    paddingHorizontal: Spacing.md,
+    overflow: 'hidden',
+  },
+  sheetGrip: { alignSelf: 'center', width: 40, height: 4, borderRadius: 2, backgroundColor: Colors.borderStrong, marginTop: 16 },
+  sheetHeader: { flexDirection: 'row', alignItems: 'flex-start', paddingTop: 12, paddingBottom: 12, marginBottom: 4 },
+  sheetTitle: { color: Colors.text, fontFamily: Fonts.display, fontSize: 21 },
+  sheetHint: { color: Colors.textLight, fontFamily: Fonts.body, fontSize: 12, marginTop: 3 },
+  closeButton: { width: 34, height: 34, borderRadius: 17, backgroundColor: Colors.surfaceAlt, alignItems: 'center', justifyContent: 'center' },
+  field: { marginTop: 12 },
+  fieldCompact: { flex: 1, minWidth: 0 },
+  fieldMultiline: { minHeight: 96 },
+  formRow: { flexDirection: 'row', gap: 10 },
+  formHint: { color: Colors.textLight, fontFamily: Fonts.body, fontSize: 12.5, lineHeight: 18, marginTop: 10 },
+  sheetButton: { marginTop: Spacing.lg },
+  skillPicker: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, paddingTop: 12, paddingBottom: Spacing.md },
+  availabilityPicker: { gap: 10, marginTop: 6 },
+  availabilityOption: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    backgroundColor: Colors.surface,
+    borderWidth: 1.5,
+    borderColor: Colors.border,
+    borderRadius: 18,
+    padding: 14,
+  },
+  availabilityOptionActive: { borderColor: Colors.accent, backgroundColor: '#F5F9FF' },
+  availabilityDot: { width: 10, height: 10, borderRadius: 5 },
+  availabilityOptionTitle: { color: Colors.text, fontFamily: Fonts.bodyBold, fontSize: 14 },
+  availabilityOptionDescription: { color: Colors.textLight, fontFamily: Fonts.body, fontSize: 12, marginTop: 3 },
+  radio: { width: 22, height: 22, borderRadius: 11, borderWidth: 2, borderColor: Colors.borderStrong, alignItems: 'center', justifyContent: 'center' },
+  radioActive: { borderColor: Colors.accent },
+  radioInner: { width: 10, height: 10, borderRadius: 5, backgroundColor: Colors.accent },
+  privacyRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    backgroundColor: Colors.surface,
+    borderWidth: 1,
+    borderColor: Colors.border,
+    borderRadius: 18,
+    padding: 14,
+    marginTop: 8,
+  },
+  privacyTitle: { color: Colors.text, fontFamily: Fonts.bodyBold, fontSize: 14 },
+  privacyText: { color: Colors.textLight, fontFamily: Fonts.body, fontSize: 12, marginTop: 3 },
+  skeletonBody: { alignItems: 'center', paddingTop: Spacing.xl },
 });

@@ -18,9 +18,11 @@ import {
   DocumentData,
 } from 'firebase/firestore';
 import { db } from '../config/firebase';
+import { encodeGeohash } from './locationService';
 import {
   Application,
   Booking,
+  GeoPoint,
   BookingStatus,
   Post,
   ProfileReview,
@@ -328,6 +330,7 @@ export async function createPost(data: Omit<Post, 'id' | 'likeCount' | 'applican
   const now = Date.now();
   const post: Omit<Post, 'id'> = {
     ...data,
+    ...(data.coords ? { geohash: encodeGeohash(data.coords) } : {}),
     likeCount: 0,
     applicantCount: 0,
     createdAt: now,
@@ -503,4 +506,139 @@ export function subscribeToApplicationsForMyPosts(
 
 export async function updateApplicationStatus(applicationId: string, status: BookingStatus) {
   await updateDoc(doc(db, 'applications', applicationId), { status });
+}
+
+export interface MapItem {
+  /** Unique across kinds: `job:<postId>` or `pro:<uid>`. */
+  id: string;
+  kind: 'job' | 'pro';
+  /** Post id for jobs, provider uid for pros. */
+  refId: string;
+  coords: GeoPoint;
+  /** Primary category, used for the pin colour. */
+  skill: string;
+  skills: string[];
+  /** Job title, or the provider's name. */
+  title: string;
+  subtitle?: string;
+  personName: string;
+  personUid: string;
+  photoURL?: string;
+  price?: number;
+  priceUnit?: 'budget' | 'hour';
+  trustScore: number;
+  locationLabel?: string;
+  createdAt: number;
+  isMock?: boolean;
+}
+
+const MAP_JOB_MAX_AGE_MS = 45 * 24 * 60 * 60 * 1000;
+
+/**
+ * Everything that is currently open for work and has coordinates: recent job posts and
+ * available providers. The Explore map only ever shows these, so it stays uncluttered.
+ */
+export async function listMapItems(): Promise<MapItem[]> {
+  const items: MapItem[] = [];
+  const cutoff = Date.now() - MAP_JOB_MAX_AGE_MS;
+
+  try {
+    const snap = await getDocs(query(collection(db, 'posts'), orderBy('createdAt', 'desc'), limit(150)));
+    const posts = snap.docs
+      .map((d) => ({ id: d.id, ...d.data() } as Post))
+      .filter((p) => p.coords && p.createdAt >= cutoff);
+    const [authors, trust] = await Promise.all([
+      Promise.all(posts.map((p) => getUserProfile(p.authorUid))),
+      Promise.all(posts.map((p) => getTrustSummary(p.authorUid))),
+    ]);
+    posts.forEach((p, i) => {
+      items.push({
+        id: `job:${p.id}`,
+        kind: 'job',
+        refId: p.id,
+        coords: p.coords as GeoPoint,
+        skill: p.skill,
+        skills: [p.skill],
+        title: p.title,
+        subtitle: p.description,
+        personName: authors[i]?.displayName ?? 'User',
+        personUid: p.authorUid,
+        photoURL: authors[i]?.photoURL,
+        price: p.budget,
+        priceUnit: 'budget',
+        trustScore: trust[i].trustScore,
+        locationLabel: p.location,
+        createdAt: p.createdAt,
+      });
+    });
+  } catch {
+    // Firestore not reachable/configured yet — mock data below still fills the map.
+  }
+
+  try {
+    const snap = await getDocs(query(collection(db, 'providers'), where('available', '==', true), limit(150)));
+    const providers = snap.docs
+      .map((d) => d.data() as ProviderProfile)
+      .filter((p) => p.coords && p.availabilityStatus !== 'away');
+    const [owners, trust] = await Promise.all([
+      Promise.all(providers.map((p) => getUserProfile(p.uid))),
+      Promise.all(providers.map((p) => getTrustSummary(p.uid))),
+    ]);
+    providers.forEach((p, i) => {
+      items.push(providerToMapItem(p, owners[i], trust[i]));
+    });
+  } catch {
+    // As above.
+  }
+
+  for (const m of MOCK_POSTS) {
+    if (!m.post.coords) continue;
+    const trust = MOCK_TRUST_SUMMARIES[m.post.authorUid] ?? emptyTrustSummary();
+    items.push({
+      id: `job:${m.post.id}`,
+      kind: 'job',
+      refId: m.post.id,
+      coords: m.post.coords,
+      skill: m.post.skill,
+      skills: [m.post.skill],
+      title: m.post.title,
+      subtitle: m.post.description,
+      personName: m.authorName,
+      personUid: m.post.authorUid,
+      photoURL: m.authorPhotoURL,
+      price: m.post.budget,
+      priceUnit: 'budget',
+      trustScore: trust.trustScore,
+      locationLabel: m.post.location,
+      createdAt: m.post.createdAt,
+      isMock: true,
+    });
+  }
+  for (const m of MOCK_PROVIDERS) {
+    if (!m.provider.coords || !m.provider.available) continue;
+    items.push({ ...providerToMapItem(m.provider, m.user, MOCK_TRUST_SUMMARIES[m.user.uid] ?? emptyTrustSummary()), isMock: true });
+  }
+
+  return items;
+}
+
+function providerToMapItem(p: ProviderProfile, owner: UserProfile | null, trust: TrustSummary): MapItem {
+  return {
+    id: `pro:${p.uid}`,
+    kind: 'pro',
+    refId: p.uid,
+    coords: p.coords as GeoPoint,
+    skill: p.skills[0] ?? 'Other',
+    skills: p.skills,
+    title: owner?.displayName ?? 'Provider',
+    subtitle: p.headline ?? p.bio,
+    personName: owner?.displayName ?? 'Provider',
+    personUid: p.uid,
+    photoURL: owner?.photoURL,
+    price: p.hourlyRate,
+    priceUnit: 'hour',
+    trustScore: trust.trustScore,
+    locationLabel: p.location,
+    createdAt: p.updatedAt,
+  };
 }

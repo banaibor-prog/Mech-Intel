@@ -5,7 +5,7 @@ import { Colors } from '../../constants/Colors';
 import { Fonts } from '../../constants/Typography';
 
 export function TrustBadge({ score }: { score: number }) {
-  return <View style={styles.trust}><AppIcon name="verified" size={13} color={Colors.accent} /><Text style={styles.trustText}>Trust {score}</Text></View>;
+  return <View style={styles.trust}><AppIcon name="verified" size={13} color={Colors.textLight} /><Text style={styles.trustText}>Trust {score}</Text></View>;
 }
 
 export function VerificationBadge() {
@@ -17,8 +17,8 @@ export function AvailabilityBadge({ label = 'Available now' }: { label?: string 
 }
 
 const styles = StyleSheet.create({
-  trust: { flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: Colors.accentSoft, borderRadius: 8, paddingHorizontal: 7, height: 24 },
-  trustText: { color: Colors.accent, fontFamily: Fonts.bodyBold, fontSize: 11 },
+  trust: { flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: '#F1F5F9', borderRadius: 8, paddingHorizontal: 7, height: 24 },
+  trustText: { color: Colors.textLight, fontFamily: Fonts.bodySemibold, fontSize: 11 },
   availability: { flexDirection: 'row', alignItems: 'center', gap: 5, backgroundColor: Colors.successSoft, borderRadius: 8, paddingHorizontal: 7, height: 24 },
   dot: { width: 6, height: 6, borderRadius: 3, backgroundColor: Colors.success },
   availabilityText: { color: Colors.success, fontFamily: Fonts.bodySemibold, fontSize: 10 },

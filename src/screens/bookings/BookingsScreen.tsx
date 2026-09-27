@@ -1,6 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, FlatList, StyleSheet, TouchableOpacity, Alert } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import AppIcon from '../../components/AppIcon';
+import Button from '../../components/Button';
+import GycLogo from '../../components/brand/GycLogo';
+import Card from '../../components/ui/Card';
+import ScreenHero from '../../components/ui/ScreenHero';
+import { categoryStyle } from '../../constants/Categories';
 import { Colors } from '../../constants/Colors';
+import { useTabBarSpace } from '../../constants/Layout';
 import { Spacing } from '../../constants/Spacing';
 import { Fonts } from '../../constants/Typography';
 import { useAuth } from '../../context/AuthContext';
@@ -14,15 +22,21 @@ import { Booking, BookingStatus } from '../../types/models';
 const TABS = ['Received', 'Sent'] as const;
 type Tab = (typeof TABS)[number];
 
-const STATUS_STYLES: Record<BookingStatus, { bg: string; fg: string }> = {
-  pending: { bg: '#FCEFDD', fg: Colors.warning },
-  accepted: { bg: '#E4F5EA', fg: Colors.success },
-  declined: { bg: '#FBE7E6', fg: Colors.error },
-  cancelled: { bg: Colors.surfaceAlt, fg: Colors.textMuted },
-  completed: { bg: '#E7E7FD', fg: Colors.accent },
+const STATUS_STYLES: Record<BookingStatus, { bg: string; fg: string; label: string }> = {
+  pending: { bg: Colors.warningSoft, fg: Colors.warning, label: 'Pending' },
+  accepted: { bg: Colors.successSoft, fg: Colors.success, label: 'Accepted' },
+  declined: { bg: Colors.errorSoft, fg: Colors.error, label: 'Declined' },
+  cancelled: { bg: Colors.surfaceAlt, fg: Colors.textMuted, label: 'Cancelled' },
+  completed: { bg: Colors.accentSoft, fg: Colors.accent, label: 'Completed' },
 };
 
+function formatDate(ts: number) {
+  return new Date(ts).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' });
+}
+
 export default function BookingsScreen() {
+  const insets = useSafeAreaInsets();
+  const tabBarSpace = useTabBarSpace();
   const { user } = useAuth();
   const [tab, setTab] = useState<Tab>('Received');
   const [received, setReceived] = useState<Booking[]>([]);
@@ -47,76 +61,91 @@ export default function BookingsScreen() {
   };
 
   const data = tab === 'Received' ? received : sent;
+  const pendingReceived = received.filter((b) => b.status === 'pending').length;
 
   return (
     <View style={styles.container}>
-      <Text style={styles.header}>Bookings</Text>
-
-      <View style={styles.tabRow}>
-        {TABS.map((t) => (
-          <TouchableOpacity
-            key={t}
-            style={[styles.tabButton, tab === t && styles.tabButtonActive]}
-            onPress={() => setTab(t)}
-            activeOpacity={0.8}
-          >
-            <Text style={[styles.tabText, tab === t && styles.tabTextActive]}>{t}</Text>
-          </TouchableOpacity>
-        ))}
-      </View>
-
       <FlatList
         data={data}
         keyExtractor={(item) => item.id}
-        contentContainerStyle={styles.listContent}
+        contentContainerStyle={{ paddingBottom: tabBarSpace + Spacing.lg }}
+        ListHeaderComponent={
+          <>
+            <ScreenHero
+              topInset={insets.top}
+              eyebrow="Your work"
+              title="Bookings"
+              subtitle={
+                pendingReceived
+                  ? `${pendingReceived} ${pendingReceived === 1 ? 'request needs' : 'requests need'} your reply`
+                  : 'Requests you send and receive, in one place'
+              }
+            />
+            <View style={styles.tabRow}>
+              {TABS.map((t) => {
+                const count = t === 'Received' ? received.length : sent.length;
+                return (
+                  <TouchableOpacity
+                    key={t}
+                    style={[styles.tabButton, tab === t && styles.tabButtonActive]}
+                    onPress={() => setTab(t)}
+                    activeOpacity={0.8}
+                    accessibilityRole="tab"
+                    accessibilityState={{ selected: tab === t }}>
+                    <Text style={[styles.tabText, tab === t && styles.tabTextActive]}>{t}</Text>
+                    <View style={[styles.countPill, tab === t && styles.countPillActive]}>
+                      <Text style={[styles.countText, tab === t && styles.countTextActive]}>{count}</Text>
+                    </View>
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+          </>
+        }
         ListEmptyComponent={
-          <Text style={styles.emptyText}>
-            {tab === 'Received' ? 'No booking requests yet.' : "You haven't sent any requests yet."}
-          </Text>
+          <View style={styles.empty}>
+            <GycLogo size={90} />
+            <Text style={styles.emptyTitle}>{tab === 'Received' ? 'No booking requests yet' : 'No requests sent yet'}</Text>
+            <Text style={styles.emptyText}>
+              {tab === 'Received'
+                ? 'When someone books you, it shows up here. Keep your profile and location up to date to be found on the map.'
+                : 'Find a pro on the Explore map or in Discover and send them a request.'}
+            </Text>
+          </View>
         }
         renderItem={({ item }) => {
           const statusStyle = STATUS_STYLES[item.status];
+          const cat = categoryStyle(item.skill);
           return (
-            <View style={styles.card}>
+            <Card style={styles.card}>
               <View style={styles.cardHeader}>
-                <Text style={styles.skillText}>{item.skill}</Text>
-                <View style={[styles.statusBadge, { backgroundColor: statusStyle.bg }]}>
-                  <Text style={[styles.statusText, { color: statusStyle.fg }]}>
-                    {item.status.toUpperCase()}
+                <View style={[styles.catIcon, { backgroundColor: '#F1F5F9' }]}>
+                  <AppIcon name={cat.icon} size={18} color={Colors.text} />
+                </View>
+                <View style={styles.flex}>
+                  <Text style={styles.skillText}>{item.skill}</Text>
+                  <Text style={styles.dateText}>
+                    Requested {formatDate(item.createdAt)}
+                    {item.preferredDate ? ` · for ${item.preferredDate}` : ''}
                   </Text>
+                </View>
+                <View style={[styles.statusBadge, { backgroundColor: statusStyle.bg }]}>
+                  <Text style={[styles.statusText, { color: statusStyle.fg }]}>{statusStyle.label}</Text>
                 </View>
               </View>
               <Text style={styles.messageText}>{item.message}</Text>
 
               {tab === 'Received' && item.status === 'pending' && (
                 <View style={styles.actionRow}>
-                  <TouchableOpacity
-                    style={[styles.actionButton, styles.declineButton]}
-                    onPress={() => handleRespond(item.id, 'declined')}
-                    activeOpacity={0.8}
-                  >
-                    <Text style={styles.declineText}>Decline</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity
-                    style={[styles.actionButton, styles.acceptButton]}
-                    onPress={() => handleRespond(item.id, 'accepted')}
-                    activeOpacity={0.8}
-                  >
-                    <Text style={styles.acceptText}>Accept</Text>
-                  </TouchableOpacity>
+                  <Button title="Decline" variant="outline" size="sm" onPress={() => handleRespond(item.id, 'declined')} style={styles.flex} />
+                  <Button title="Accept" size="sm" icon="verified" onPress={() => handleRespond(item.id, 'accepted')} style={styles.flex} />
                 </View>
               )}
 
               {tab === 'Sent' && item.status === 'pending' && (
-                <TouchableOpacity
-                  style={[styles.actionButton, styles.declineButton, styles.cancelButton]}
-                  onPress={() => handleRespond(item.id, 'cancelled')}
-                  activeOpacity={0.8}
-                >
-                  <Text style={styles.declineText}>Cancel Request</Text>
-                </TouchableOpacity>
+                <Button title="Cancel request" variant="outline" size="sm" onPress={() => handleRespond(item.id, 'cancelled')} style={styles.cancel} />
               )}
-            </View>
+            </Card>
           );
         }}
       />
@@ -125,123 +154,50 @@ export default function BookingsScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: Colors.background,
-    paddingTop: Spacing.xxl,
-  },
-  header: {
-    fontSize: 26,
-    fontFamily: Fonts.display,
-    color: Colors.text,
-    paddingHorizontal: Spacing.md,
-    marginBottom: Spacing.md,
-  },
+  container: { flex: 1, backgroundColor: Colors.background },
+  flex: { flex: 1 },
   tabRow: {
     flexDirection: 'row',
     marginHorizontal: Spacing.md,
-    backgroundColor: Colors.surfaceAlt,
-    borderRadius: 14,
-    padding: 4,
     marginBottom: Spacing.md,
+    backgroundColor: Colors.surfaceAlt,
+    borderRadius: 16,
+    padding: 4,
   },
   tabButton: {
     flex: 1,
-    paddingVertical: Spacing.xs + 4,
-    borderRadius: 10,
+    flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    paddingVertical: 10,
+    borderRadius: 12,
   },
   tabButtonActive: {
     backgroundColor: Colors.surface,
-    shadowColor: Colors.black,
-    shadowOpacity: 0.06,
-    shadowRadius: 4,
-    shadowOffset: { width: 0, height: 1 },
-    elevation: 1,
-  },
-  tabText: {
-    fontSize: 14,
-    color: Colors.textLight,
-    fontFamily: Fonts.bodySemibold,
-  },
-  tabTextActive: {
-    color: Colors.text,
-  },
-  listContent: {
-    paddingHorizontal: Spacing.md,
-    paddingBottom: Spacing.xxl + 80,
-  },
-  card: {
-    backgroundColor: Colors.surface,
-    borderRadius: 16,
-    padding: Spacing.md,
-    marginBottom: Spacing.sm + 2,
-    shadowColor: Colors.black,
-    shadowOpacity: 0.05,
-    shadowRadius: 8,
+    shadowColor: '#1E3A8A',
+    shadowOpacity: 0.08,
+    shadowRadius: 6,
     shadowOffset: { width: 0, height: 2 },
-    elevation: 1,
+    elevation: 2,
   },
-  cardHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  skillText: {
-    fontSize: 16,
-    fontFamily: Fonts.bodyBold,
-    color: Colors.text,
-  },
-  statusBadge: {
-    paddingHorizontal: Spacing.xs + 2,
-    paddingVertical: 3,
-    borderRadius: 8,
-  },
-  statusText: {
-    fontSize: 11,
-    fontFamily: Fonts.bodyBold,
-  },
-  messageText: {
-    fontSize: 14,
-    fontFamily: Fonts.body,
-    color: Colors.textLight,
-    marginTop: Spacing.xs,
-    lineHeight: 20,
-  },
-  actionRow: {
-    flexDirection: 'row',
-    marginTop: Spacing.sm,
-    gap: Spacing.sm,
-  },
-  actionButton: {
-    flex: 1,
-    paddingVertical: Spacing.xs + 4,
-    borderRadius: 10,
-    alignItems: 'center',
-  },
-  acceptButton: {
-    backgroundColor: Colors.ink,
-  },
-  declineButton: {
-    backgroundColor: Colors.surfaceAlt,
-  },
-  cancelButton: {
-    flex: undefined,
-    marginTop: Spacing.sm,
-  },
-  acceptText: {
-    color: Colors.white,
-    fontFamily: Fonts.bodyBold,
-    fontSize: 13,
-  },
-  declineText: {
-    color: Colors.error,
-    fontFamily: Fonts.bodyBold,
-    fontSize: 13,
-  },
-  emptyText: {
-    textAlign: 'center',
-    color: Colors.textLight,
-    marginTop: Spacing.xxl,
-  },
+  tabText: { fontFamily: Fonts.bodySemibold, fontSize: 14, color: Colors.textLight },
+  tabTextActive: { color: Colors.text },
+  countPill: { minWidth: 22, paddingHorizontal: 6, borderRadius: 11, backgroundColor: Colors.surface, alignItems: 'center' },
+  countPillActive: { backgroundColor: Colors.accent },
+  countText: { fontFamily: Fonts.bodyBold, fontSize: 11, color: Colors.textLight, lineHeight: 18 },
+  countTextActive: { color: Colors.white },
+  card: { marginHorizontal: Spacing.md, marginBottom: Spacing.sm + 4 },
+  cardHeader: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+  catIcon: { width: 40, height: 40, borderRadius: 14, alignItems: 'center', justifyContent: 'center' },
+  skillText: { fontSize: 15.5, fontFamily: Fonts.display, color: Colors.text },
+  dateText: { fontSize: 11.5, fontFamily: Fonts.bodyMedium, color: Colors.textMuted, marginTop: 1 },
+  statusBadge: { paddingHorizontal: 10, paddingVertical: 4, borderRadius: 999 },
+  statusText: { fontSize: 11, fontFamily: Fonts.bodyBold },
+  messageText: { fontSize: 14, fontFamily: Fonts.body, lineHeight: 20, color: Colors.textLight, marginTop: 12 },
+  actionRow: { flexDirection: 'row', gap: Spacing.sm, marginTop: Spacing.md },
+  cancel: { marginTop: Spacing.md },
+  empty: { alignItems: 'center', paddingTop: Spacing.lg, paddingHorizontal: Spacing.xl },
+  emptyTitle: { fontFamily: Fonts.display, fontSize: 18, color: Colors.text, marginTop: Spacing.md, textAlign: 'center' },
+  emptyText: { fontFamily: Fonts.body, fontSize: 13, lineHeight: 19, color: Colors.textLight, marginTop: 6, textAlign: 'center' },
 });
