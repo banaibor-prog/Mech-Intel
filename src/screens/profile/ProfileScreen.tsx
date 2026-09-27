@@ -1,20 +1,17 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Alert, Modal, ScrollView, StyleSheet, Switch, Text, TouchableOpacity, View } from 'react-native';
-import LinearGradient from 'react-native-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { launchImageLibrary } from 'react-native-image-picker';
 import { useNavigation } from '@react-navigation/native';
 import AppIcon, { AppIconName } from '../../components/AppIcon';
 import Button from '../../components/Button';
 import GycLoader from '../../components/GycLoader';
-import BambooTexture from '../../components/brand/BambooTexture';
-import KhasiWeave from '../../components/brand/KhasiWeave';
 import Chip from '../../components/ui/Chip';
 import ScreenHero from '../../components/ui/ScreenHero';
 import TextField from '../../components/ui/TextField';
 import { categoryStyle } from '../../constants/Categories';
 import { MarketplaceProfileContent, ProfileIdentityHeader, ProfileSection, ProfileStrengthCard } from '../../components/MarketplaceProfileSections';
-import { Colors, Gradients } from '../../constants/Colors';
+import { Colors } from '../../constants/Colors';
 import { useTabBarSpace } from '../../constants/Layout';
 import { Spacing } from '../../constants/Spacing';
 import { Fonts } from '../../constants/Typography';
@@ -204,8 +201,7 @@ export default function ProfileScreen() {
           </ProfileSection>
 
           {!provider ? (
-            <LinearGradient colors={[...Gradients.hero]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.startCard}>
-              <BambooTexture color={Colors.white} opacity={0.08} />
+            <View style={styles.startCard}>
               <View style={styles.startIcon}>
                 <AppIcon name="map" size={20} color={Colors.white} />
               </View>
@@ -214,12 +210,11 @@ export default function ProfileScreen() {
                 Add your skills and a first service to appear on the Explore map. You can still hire people from the same account.
               </Text>
               <Button title="Set up my services" icon="arrowRight" onPress={() => openEditor('details')} style={styles.startButton} />
-            </LinearGradient>
+            </View>
           ) : null}
 
           <MarketplaceProfileContent user={publicUser} provider={provider} trust={trust} reviews={reviews} isOwner onEdit={(section) => openEditor(section)} />
 
-          <KhasiWeave height={10} opacity={0.3} style={styles.footerWeave} />
           {profile?.isAdmin ? (
             <Button title="Moderation queue" icon="verified" variant="dark" onPress={() => navigation.navigate('Moderation')} style={styles.adminButton} />
           ) : null}
@@ -236,8 +231,8 @@ export default function ProfileScreen() {
 function WorkspaceTile({ icon, color, value, label, onPress }: { icon: AppIconName; color: string; value: string; label: string; onPress: () => void }) {
   return (
     <TouchableOpacity accessibilityRole="button" activeOpacity={0.8} style={styles.workspaceTile} onPress={onPress}>
-      <View style={[styles.workspaceIcon, { backgroundColor: `${color}16` }]}>
-        <AppIcon name={icon} size={16} color={color} />
+      <View style={styles.workspaceIcon}>
+        <AppIcon name={icon} size={16} color={Colors.text} />
       </View>
       <Text style={styles.workspaceValue}>{value}</Text>
       <Text style={styles.workspaceLabel}>{label}</Text>
@@ -265,7 +260,6 @@ function ProfileEditor(props: EditorProps) {
     <Modal visible transparent animationType="slide" onRequestClose={props.onClose}>
       <View style={styles.modalBackdrop}>
         <View style={[styles.sheet, { paddingBottom: insets.bottom + Spacing.lg }]}>
-          <KhasiWeave height={8} opacity={0.4} bordered={false} style={styles.sheetWeave} />
           <View style={styles.sheetGrip} />
           <View style={styles.sheetHeader}>
             <View style={styles.flex}>
@@ -322,7 +316,7 @@ function SkillsForm({ provider, saving, onToggle }: { provider: ProviderProfile 
               key={skill}
               label={skill}
               icon={cat.icon}
-              color={cat.color}
+             
               active={provider?.skills.includes(skill)}
               onPress={saving ? undefined : () => onToggle(skill)}
             />
@@ -429,16 +423,15 @@ const styles = StyleSheet.create({
     borderRadius: 18,
     padding: 14,
   },
-  workspaceIcon: { width: 32, height: 32, borderRadius: 11, alignItems: 'center', justifyContent: 'center', marginBottom: 10 },
+  workspaceIcon: { width: 32, height: 32, borderRadius: 10, alignItems: 'center', justifyContent: 'center', marginBottom: 10, backgroundColor: '#F1F5F9' },
   workspaceValue: { color: Colors.text, fontFamily: Fonts.display, fontSize: 20 },
   workspaceLabel: { color: Colors.textLight, fontFamily: Fonts.bodyMedium, fontSize: 11.5, marginTop: 2 },
   workspaceActions: { flexDirection: 'row', gap: 10, marginTop: 10 },
-  startCard: { borderRadius: 24, padding: Spacing.lg - 4, marginTop: Spacing.lg, overflow: 'hidden' },
+  startCard: { borderRadius: 24, padding: Spacing.lg - 4, marginTop: Spacing.lg, overflow: 'hidden', backgroundColor: Colors.ink },
   startIcon: { width: 40, height: 40, borderRadius: 14, backgroundColor: 'rgba(255,255,255,0.14)', alignItems: 'center', justifyContent: 'center', marginBottom: 12 },
   startTitle: { color: Colors.white, fontFamily: Fonts.display, fontSize: 19 },
   startText: { color: 'rgba(255,255,255,0.76)', fontFamily: Fonts.body, fontSize: 13, lineHeight: 19, marginTop: 6 },
   startButton: { marginTop: 16 },
-  footerWeave: { marginTop: Spacing.xl },
   adminButton: { marginTop: Spacing.lg },
   signOut: { alignItems: 'center', paddingVertical: Spacing.lg, marginTop: Spacing.sm },
   signOutText: { color: Colors.error, fontFamily: Fonts.bodyBold, fontSize: 13.5 },
@@ -452,7 +445,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.md,
     overflow: 'hidden',
   },
-  sheetWeave: { position: 'absolute', top: 0, left: 0, right: 0 },
   sheetGrip: { alignSelf: 'center', width: 40, height: 4, borderRadius: 2, backgroundColor: Colors.borderStrong, marginTop: 16 },
   sheetHeader: { flexDirection: 'row', alignItems: 'flex-start', paddingTop: 12, paddingBottom: 12, marginBottom: 4 },
   sheetTitle: { color: Colors.text, fontFamily: Fonts.display, fontSize: 21 },

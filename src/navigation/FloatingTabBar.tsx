@@ -2,13 +2,11 @@ import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { BottomTabBarProps } from '@react-navigation/bottom-tabs';
 import { getFocusedRouteNameFromRoute } from '@react-navigation/native';
-import LinearGradient from 'react-native-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { MainTabParamList } from './types';
-import { Colors, Gradients } from '../constants/Colors';
+import { Colors } from '../constants/Colors';
 import { Fonts } from '../constants/Typography';
 import AppIcon, { AppIconName } from '../components/AppIcon';
-import KhasiWeave from '../components/brand/KhasiWeave';
 
 const TABS: Record<keyof MainTabParamList, { icon: AppIconName; label: string }> = {
   HomeTab: { icon: 'home', label: 'Home' },
@@ -30,7 +28,6 @@ export default function FloatingTabBar({ state, navigation }: BottomTabBarProps)
   return (
     <View style={[styles.wrap, { bottom: Math.max(10, insets.bottom + 6) }]} pointerEvents="box-none">
       <View style={styles.bar}>
-        <KhasiWeave height={5} color="#D9A55B" opacity={0.45} bordered={false} style={styles.weave} />
         {state.routes.map((route, index) => {
           const focused = state.index === index;
           const tab = TABS[route.name as keyof MainTabParamList];
@@ -48,12 +45,12 @@ export default function FloatingTabBar({ state, navigation }: BottomTabBarProps)
               accessibilityState={{ selected: focused }}
               accessibilityLabel={tab.label}>
               {focused ? (
-                <LinearGradient colors={[...Gradients.brand]} start={{ x: 0, y: 1 }} end={{ x: 1, y: 0 }} style={styles.bubble}>
-                  <AppIcon name={tab.icon} size={20} color={Colors.white} />
-                </LinearGradient>
+                <View style={styles.bubble}>
+                  <AppIcon name={tab.icon} size={20} color={Colors.ink} />
+                </View>
               ) : (
                 <View style={styles.bubbleIdle}>
-                  <AppIcon name={tab.icon} size={21} color="rgba(203,213,225,0.72)" />
+                  <AppIcon name={tab.icon} size={21} color="rgba(255,255,255,0.55)" />
                 </View>
               )}
               <Text style={[styles.label, focused && styles.labelActive]}>{tab.label}</Text>
@@ -69,7 +66,7 @@ const styles = StyleSheet.create({
   wrap: { position: 'absolute', left: 14, right: 14 },
   bar: {
     flexDirection: 'row',
-    backgroundColor: '#0B1233',
+    backgroundColor: Colors.ink,
     borderRadius: 28,
     paddingTop: 10,
     paddingBottom: 9,
@@ -77,16 +74,15 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.08)',
     overflow: 'hidden',
-    shadowColor: '#050A1F',
-    shadowOpacity: 0.35,
-    shadowRadius: 20,
-    shadowOffset: { width: 0, height: 10 },
-    elevation: 14,
+    shadowColor: '#0F172A',
+    shadowOpacity: 0.25,
+    shadowRadius: 16,
+    shadowOffset: { width: 0, height: 8 },
+    elevation: 12,
   },
-  weave: { position: 'absolute', top: 0, left: 0, right: 0 },
   item: { flex: 1, alignItems: 'center' },
-  bubble: { width: 44, height: 32, borderRadius: 16, alignItems: 'center', justifyContent: 'center' },
+  bubble: { width: 44, height: 32, borderRadius: 16, alignItems: 'center', justifyContent: 'center', backgroundColor: Colors.white },
   bubbleIdle: { width: 44, height: 32, alignItems: 'center', justifyContent: 'center' },
-  label: { fontFamily: Fonts.bodySemibold, fontSize: 10.5, color: 'rgba(203,213,225,0.6)', marginTop: 3 },
+  label: { fontFamily: Fonts.bodySemibold, fontSize: 10.5, color: 'rgba(255,255,255,0.5)', marginTop: 3 },
   labelActive: { color: Colors.white },
 });

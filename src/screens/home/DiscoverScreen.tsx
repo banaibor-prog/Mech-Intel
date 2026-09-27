@@ -9,11 +9,10 @@ import {
   RefreshControl,
   TextInput,
 } from 'react-native';
-import LinearGradient from 'react-native-linear-gradient';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { DocumentData, QueryDocumentSnapshot } from 'firebase/firestore';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Colors, Gradients } from '../../constants/Colors';
+import { Colors } from '../../constants/Colors';
 import { categoryStyle } from '../../constants/Categories';
 import { zoneForPoint } from '../../data/meghalayaZones';
 import { Spacing } from '../../constants/Spacing';
@@ -26,7 +25,6 @@ import Avatar from '../../components/Avatar';
 import AppIcon from '../../components/AppIcon';
 import GycLoader from '../../components/GycLoader';
 import GycLogo from '../../components/brand/GycLogo';
-import KhasiWeave from '../../components/brand/KhasiWeave';
 import Card from '../../components/ui/Card';
 import Chip from '../../components/ui/Chip';
 import ScreenHero from '../../components/ui/ScreenHero';
@@ -121,9 +119,9 @@ export default function DiscoverScreen({ navigation }: Props) {
             activeOpacity={0.85}
             accessibilityRole="button"
             accessibilityLabel="Open the live map">
-            <LinearGradient colors={[...Gradients.brand]} start={{ x: 0, y: 1 }} end={{ x: 1, y: 0 }} style={styles.mapButton}>
+            <View style={styles.mapButton}>
               <AppIcon name="map" size={20} color={Colors.white} />
-            </LinearGradient>
+            </View>
           </TouchableOpacity>
         </View>
       </ScreenHero>
@@ -140,14 +138,13 @@ export default function DiscoverScreen({ navigation }: Props) {
             <Chip
               label={item}
               icon={cat?.icon ?? 'layers'}
-              color={cat?.color}
+             
               active={selectedSkill === item}
               onPress={() => setSelectedSkill(item)}
             />
           );
         }}
       />
-      <KhasiWeave height={8} opacity={0.3} bordered={false} style={styles.weave} />
     </>
   );
 
@@ -179,11 +176,11 @@ export default function DiscoverScreen({ navigation }: Props) {
           const place = item.location || (zone ? `${zone.name}, ${zone.area}` : undefined);
           return (
             <TouchableOpacity activeOpacity={0.88} onPress={() => navigation.navigate('PublicProfile', { uid: item.uid })}>
-              <Card style={styles.card} accent={cat.color}>
+              <Card style={styles.card}>
                 <View style={styles.cardRow}>
-                  <View style={[styles.avatarRing, { borderColor: cat.color }]}>
+                  <View style={[styles.avatarRing, { borderColor: Colors.border }]}>
                     <Avatar name={item.displayName} photoURL={item.photoURL} size={52} />
-                    <View style={[styles.catBadge, { backgroundColor: cat.color }]}>
+                    <View style={[styles.catBadge, { backgroundColor: Colors.ink }]}>
                       <AppIcon name={cat.icon} size={10} color={Colors.white} />
                     </View>
                   </View>
@@ -199,7 +196,7 @@ export default function DiscoverScreen({ navigation }: Props) {
                         </View>
                       ) : null}
                     </View>
-                    <Text style={[styles.skillText, { color: cat.color }]} numberOfLines={1}>
+                    <Text style={styles.skillText} numberOfLines={1}>
                       {item.skills.join(' · ')}
                     </Text>
                     {item.bio ? (
@@ -271,10 +268,9 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   searchInput: { flex: 1, color: Colors.text, fontFamily: Fonts.body, paddingVertical: 12, fontSize: 15 },
-  mapButton: { width: 48, height: 48, borderRadius: 16, alignItems: 'center', justifyContent: 'center' },
+  mapButton: { width: 48, height: 48, borderRadius: 16, alignItems: 'center', justifyContent: 'center', backgroundColor: Colors.accent },
   filterList: { flexGrow: 0 },
   filterContent: { paddingHorizontal: Spacing.md, gap: 8, paddingVertical: 4 },
-  weave: { marginTop: 10, marginBottom: 4 },
   loader: { alignSelf: 'center', marginTop: Spacing.xl },
   footerLoader: { marginVertical: Spacing.lg },
   listContent: { paddingBottom: Spacing.xxl },

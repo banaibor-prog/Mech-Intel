@@ -24,20 +24,20 @@ export default function ProviderCard({ provider, onPress }: { provider: Provider
         {provider.photoURL ? (
           <Image source={{ uri: provider.photoURL }} style={styles.photo} resizeMode="cover" />
         ) : (
-          <LinearGradient colors={[cat.color, `${cat.color}99`]} style={[styles.photo, styles.initialsWrap]}>
+          <View style={[styles.photo, styles.initialsWrap]}>
             <Text style={styles.initials}>{initials(provider.displayName)}</Text>
-          </LinearGradient>
+          </View>
         )}
-        <LinearGradient colors={['rgba(5,10,31,0)', 'rgba(5,10,31,0.86)']} style={styles.shade} />
+        <LinearGradient colors={['rgba(15,23,42,0)', 'rgba(15,23,42,0.82)']} style={styles.shade} />
         <View style={styles.topRow}>
-          <View style={[styles.catChip, { backgroundColor: cat.color }]}>
+          <View style={styles.catChip}>
             <AppIcon name={cat.icon} size={11} color={Colors.white} />
             <Text style={styles.catText} numberOfLines={1}>
               {provider.skills[0] || 'Pro'}
             </Text>
           </View>
           <View style={styles.rating}>
-            <AppIcon name="star" size={11} color="#FBBF24" filled />
+            <AppIcon name="star" size={11} color={Colors.white} filled />
             <Text style={styles.ratingText}>{rating}</Text>
           </View>
         </View>
@@ -46,7 +46,7 @@ export default function ProviderCard({ provider, onPress }: { provider: Provider
             <Text style={styles.name} numberOfLines={1}>
               {provider.displayName.split(' ')[0]}
             </Text>
-            {verified ? <AppIcon name="verified" size={14} color="#67E8F9" filled /> : null}
+            {verified ? <AppIcon name="verified" size={14} color={Colors.white} filled /> : null}
           </View>
           <View style={styles.placeRow}>
             {provider.available ? <View style={styles.onlineDot} /> : null}
@@ -61,10 +61,7 @@ export default function ProviderCard({ provider, onPress }: { provider: Provider
           {provider.hourlyRate ? `₹${provider.hourlyRate}` : 'Quote'}
           {provider.hourlyRate ? <Text style={styles.rateUnit}>/hr</Text> : null}
         </Text>
-        <View style={styles.trust}>
-          <AppIcon name="verified" size={11} color={Colors.success} />
-          <Text style={styles.trustText}>{provider.trustScore}</Text>
-        </View>
+        <Text style={styles.trustText}>Trust {provider.trustScore}</Text>
       </View>
     </TouchableOpacity>
   );
@@ -77,32 +74,26 @@ const styles = StyleSheet.create({
     borderRadius: 24,
     padding: 5,
     borderWidth: 1,
-    borderColor: '#EDF1F7',
-    shadowColor: '#1E3A8A',
-    shadowOpacity: 0.08,
-    shadowRadius: 14,
-    shadowOffset: { width: 0, height: 7 },
-    elevation: 3,
+    borderColor: Colors.border,
   },
   photoWrap: { height: 186, borderRadius: 20, overflow: 'hidden', backgroundColor: Colors.surfaceAlt },
   photo: { position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' },
-  initialsWrap: { alignItems: 'center', justifyContent: 'center' },
+  initialsWrap: { alignItems: 'center', justifyContent: 'center', backgroundColor: '#334155' },
   initials: { color: Colors.white, fontFamily: Fonts.display, fontSize: 40 },
   shade: { position: 'absolute', left: 0, right: 0, bottom: 0, height: '62%' },
   topRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 8 },
-  catChip: { flexDirection: 'row', alignItems: 'center', gap: 4, borderRadius: 999, paddingHorizontal: 8, paddingVertical: 4, maxWidth: 104 },
+  catChip: { flexDirection: 'row', alignItems: 'center', gap: 4, borderRadius: 999, paddingHorizontal: 8, paddingVertical: 4, maxWidth: 104, backgroundColor: 'rgba(15,23,42,0.6)' },
   catText: { color: Colors.white, fontFamily: Fonts.bodyBold, fontSize: 10.5, flexShrink: 1 },
-  rating: { flexDirection: 'row', alignItems: 'center', gap: 3, backgroundColor: 'rgba(5,10,31,0.55)', borderRadius: 999, paddingHorizontal: 7, paddingVertical: 4 },
+  rating: { flexDirection: 'row', alignItems: 'center', gap: 3, backgroundColor: 'rgba(15,23,42,0.6)', borderRadius: 999, paddingHorizontal: 7, paddingVertical: 4 },
   ratingText: { color: Colors.white, fontFamily: Fonts.bodyBold, fontSize: 10.5 },
   nameBlock: { position: 'absolute', left: 12, right: 12, bottom: 11 },
   nameRow: { flexDirection: 'row', alignItems: 'center', gap: 5 },
   name: { color: Colors.white, fontFamily: Fonts.display, fontSize: 18, letterSpacing: -0.3, flexShrink: 1 },
   placeRow: { flexDirection: 'row', alignItems: 'center', gap: 5, marginTop: 2 },
-  onlineDot: { width: 7, height: 7, borderRadius: 4, backgroundColor: '#34D399' },
+  onlineDot: { width: 7, height: 7, borderRadius: 4, backgroundColor: '#22C55E' },
   place: { color: 'rgba(255,255,255,0.82)', fontFamily: Fonts.bodyMedium, fontSize: 11.5, flexShrink: 1 },
   footer: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 8, paddingTop: 9, paddingBottom: 6 },
   rate: { color: Colors.text, fontFamily: Fonts.display, fontSize: 15 },
   rateUnit: { color: Colors.textMuted, fontFamily: Fonts.bodyMedium, fontSize: 11 },
-  trust: { flexDirection: 'row', alignItems: 'center', gap: 3, backgroundColor: Colors.successSoft, borderRadius: 999, paddingHorizontal: 7, paddingVertical: 3 },
-  trustText: { color: Colors.success, fontFamily: Fonts.bodyBold, fontSize: 11 },
+  trustText: { color: Colors.textMuted, fontFamily: Fonts.bodySemibold, fontSize: 11 },
 });

@@ -117,10 +117,10 @@ export default function BookingsScreen() {
           const statusStyle = STATUS_STYLES[item.status];
           const cat = categoryStyle(item.skill);
           return (
-            <Card style={styles.card} accent={cat.color}>
+            <Card style={styles.card}>
               <View style={styles.cardHeader}>
-                <View style={[styles.catIcon, { backgroundColor: cat.soft }]}>
-                  <AppIcon name={cat.icon} size={18} color={cat.color} />
+                <View style={[styles.catIcon, { backgroundColor: '#F1F5F9' }]}>
+                  <AppIcon name={cat.icon} size={18} color={Colors.text} />
                 </View>
                 <View style={styles.flex}>
                   <Text style={styles.skillText}>{item.skill}</Text>

@@ -5,7 +5,6 @@ import Avatar from '../../components/Avatar';
 import Button from '../../components/Button';
 import GycLoader from '../../components/GycLoader';
 import GycLogo from '../../components/brand/GycLogo';
-import KhasiWeave from '../../components/brand/KhasiWeave';
 import Card from '../../components/ui/Card';
 import Chip from '../../components/ui/Chip';
 import TextField from '../../components/ui/TextField';
@@ -245,7 +244,7 @@ export default function PublicProfileScreen({ route, navigation }: Props) {
         <Button title="Share" icon="arrowRight" variant="outline" onPress={shareProfile} style={targetIsProvider && !isSelf ? null : styles.flex} />
       </View>
 
-      <Card bamboo style={styles.trustCard}>
+      <Card style={styles.trustCard}>
         <View style={styles.trustRow}>
           <View style={styles.trustScore}>
             <Text style={styles.trustValue}>{trust.trustScore}</Text>
@@ -335,7 +334,7 @@ export default function PublicProfileScreen({ route, navigation }: Props) {
           ) : null}
 
           {activeForm === 'report' || activeForm === 'block' ? (
-            <Card style={styles.form} accent={Colors.error}>
+            <Card style={styles.form}>
               <Text style={styles.formTitle}>{activeForm === 'report' ? 'Report profile' : 'Block profile'}</Text>
               <Text style={styles.formLabel}>What's the reason?</Text>
               <View style={styles.reasonGrid}>
@@ -392,7 +391,7 @@ export default function PublicProfileScreen({ route, navigation }: Props) {
           <Text style={styles.emptyInline}>No references yet.</Text>
         ) : (
           profile.references.map((reference) => (
-            <Card key={reference.id} style={styles.historyCard} accent={Colors.community}>
+            <Card key={reference.id} style={styles.historyCard}>
               <View style={styles.historyHeader}>
                 <Avatar name={reference.fromName} photoURL={reference.fromPhotoURL} size={36} />
                 <View style={styles.historyHeaderText}>
@@ -408,7 +407,6 @@ export default function PublicProfileScreen({ route, navigation }: Props) {
         )}
       </ProfileSection>
 
-      <KhasiWeave height={10} opacity={0.3} style={styles.footerWeave} />
     </ScrollView>
   );
 }
@@ -514,5 +512,4 @@ const styles = StyleSheet.create({
   projectTitle: { fontFamily: Fonts.bodySemibold, color: Colors.accent, fontSize: 12.5, marginTop: 10 },
   bodyText: { fontFamily: Fonts.body, fontSize: 13.5, color: Colors.textLight, lineHeight: 20, marginTop: 5 },
   emptyInline: { fontFamily: Fonts.body, color: Colors.textLight, fontSize: 13 },
-  footerWeave: { marginTop: Spacing.xl },
 });

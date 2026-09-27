@@ -15,7 +15,7 @@ interface Props {
   eyebrow?: string;
 }
 
-export default function ProviderCarousel({ providers, onSeeAll, onSelect, title = 'Trusted pros near you', eyebrow = 'Ready to help' }: Props) {
+export default function ProviderCarousel({ providers, onSeeAll, onSelect, title = 'Pros near you', eyebrow }: Props) {
   return (
     <View style={styles.section}>
       <View style={styles.header}>

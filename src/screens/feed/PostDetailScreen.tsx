@@ -1,14 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, Alert, Image, ScrollView, TouchableOpacity } from 'react-native';
-import LinearGradient from 'react-native-linear-gradient';
 import { useNavigation } from '@react-navigation/native';
 import AppIcon, { AppIconName } from '../../components/AppIcon';
 import Avatar from '../../components/Avatar';
 import Button from '../../components/Button';
 import GycLoader from '../../components/GycLoader';
-import BambooTexture from '../../components/brand/BambooTexture';
 import GycLogo from '../../components/brand/GycLogo';
-import KhasiWeave from '../../components/brand/KhasiWeave';
 import Card from '../../components/ui/Card';
 import TextField from '../../components/ui/TextField';
 import { categoryStyle } from '../../constants/Categories';
@@ -146,17 +143,15 @@ export default function PostDetailScreen({ route, navigation }: Props) {
   return (
     <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
       <View style={styles.hero}>
-        <LinearGradient colors={[cat.color, `${cat.color}CC`]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.band}>
-          <BambooTexture color={Colors.white} opacity={0.18} />
+        <View style={styles.band}>
           <View style={styles.bandRow}>
             <View style={styles.bandIcon}>
-              <AppIcon name={cat.icon} size={18} color={cat.color} />
+              <AppIcon name={cat.icon} size={18} color={Colors.text} />
             </View>
             <Text style={styles.bandSkill}>{post.skill}</Text>
             <Text style={styles.bandTime}>{timeAgo(post.createdAt)}</Text>
           </View>
-          <KhasiWeave height={8} color={Colors.white} opacity={0.5} bordered={false} style={styles.bandWeave} />
-        </LinearGradient>
+        </View>
 
         <View style={styles.heroBody}>
           <Text style={styles.title}>{post.title}</Text>
@@ -195,9 +190,9 @@ export default function PostDetailScreen({ route, navigation }: Props) {
 
       {post.coords ? (
         <TouchableOpacity activeOpacity={0.85} onPress={seeOnMap}>
-          <LinearGradient colors={['#0F172A', '#1E3A8A']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.mapCard}>
-            <View style={[styles.mapPin, { borderColor: cat.color }]}>
-              <AppIcon name={cat.icon} size={16} color={cat.color} />
+          <View style={styles.mapCard}>
+            <View style={[styles.mapPin, { borderColor: Colors.border }]}>
+              <AppIcon name={cat.icon} size={16} color={Colors.text} />
             </View>
             <View style={styles.flex}>
               <Text style={styles.mapTitle}>{place ?? 'Pinned on the map'}</Text>
@@ -206,7 +201,7 @@ export default function PostDetailScreen({ route, navigation }: Props) {
             <View style={styles.mapGo}>
               <AppIcon name="map" size={16} color={Colors.white} />
             </View>
-          </LinearGradient>
+          </View>
         </TouchableOpacity>
       ) : null}
 
@@ -248,7 +243,7 @@ export default function PostDetailScreen({ route, navigation }: Props) {
       ) : (
         <>
           <SectionHeading title="Apply for this job" />
-          <Card accent={cat.color}>
+          <Card>
             <TextField
               placeholder="Introduce yourself and why you're a good fit…"
               multiline
@@ -268,7 +263,6 @@ function SectionHeading({ title }: { title: string }) {
   return (
     <View style={styles.sectionHeading}>
       <Text style={styles.sectionTitle}>{title}</Text>
-      <KhasiWeave height={6} opacity={0.55} bordered={false} style={styles.sectionWeave} />
     </View>
   );
 }
@@ -305,12 +299,11 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 8 },
     elevation: 3,
   },
-  band: { paddingHorizontal: Spacing.md, paddingTop: 14, paddingBottom: 22 },
+  band: { paddingHorizontal: Spacing.md, paddingVertical: 14, backgroundColor: Colors.ink },
   bandRow: { flexDirection: 'row', alignItems: 'center' },
   bandIcon: { width: 34, height: 34, borderRadius: 17, backgroundColor: Colors.white, alignItems: 'center', justifyContent: 'center' },
   bandSkill: { flex: 1, color: Colors.white, fontFamily: Fonts.display, fontSize: 15, marginLeft: 10 },
   bandTime: { color: 'rgba(255,255,255,0.85)', fontFamily: Fonts.bodySemibold, fontSize: 12 },
-  bandWeave: { position: 'absolute', bottom: 6, left: 0, right: 0 },
   heroBody: { padding: Spacing.md },
   title: { fontSize: 22, lineHeight: 28, fontFamily: Fonts.display, color: Colors.text, letterSpacing: -0.4 },
   description: { fontSize: 14.5, fontFamily: Fonts.body, color: Colors.textLight, marginTop: 8, lineHeight: 22 },
@@ -345,7 +338,7 @@ const styles = StyleSheet.create({
   photos: { gap: 10, paddingTop: Spacing.md },
   photo: { width: 140, height: 140, borderRadius: 18, backgroundColor: Colors.surfaceAlt },
 
-  mapCard: { flexDirection: 'row', alignItems: 'center', gap: 12, borderRadius: 20, padding: 14, marginTop: Spacing.md },
+  mapCard: { flexDirection: 'row', alignItems: 'center', gap: 12, borderRadius: 20, padding: 14, marginTop: Spacing.md, backgroundColor: Colors.ink },
   mapPin: { width: 40, height: 40, borderRadius: 20, borderWidth: 2.5, backgroundColor: Colors.white, alignItems: 'center', justifyContent: 'center' },
   mapTitle: { color: Colors.white, fontFamily: Fonts.bodyBold, fontSize: 14 },
   mapSub: { color: 'rgba(255,255,255,0.7)', fontFamily: Fonts.body, fontSize: 11.5, marginTop: 2 },
@@ -353,7 +346,6 @@ const styles = StyleSheet.create({
 
   sectionHeading: { marginTop: Spacing.lg, marginBottom: 10 },
   sectionTitle: { fontSize: 18, fontFamily: Fonts.display, color: Colors.text, letterSpacing: -0.3 },
-  sectionWeave: { width: 64, marginTop: 4 },
   spacingTop: { marginTop: Spacing.md },
   emptyCard: {
     flexDirection: 'row',

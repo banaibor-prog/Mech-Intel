@@ -2,14 +2,12 @@ import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import Button from '../Button';
 import GycLogo from '../brand/GycLogo';
-import BambooTexture from '../brand/BambooTexture';
 import { Colors } from '../../constants/Colors';
 import { Fonts } from '../../constants/Typography';
 
 export default function HomeEmptyState({ title, message, actionLabel, onAction }: { title: string; message: string; actionLabel: string; onAction: () => void }) {
   return (
     <View style={styles.container}>
-      <BambooTexture opacity={0.1} />
       <GycLogo size={84} />
       <Text style={styles.title}>{title}</Text>
       <Text style={styles.message}>{message}</Text>

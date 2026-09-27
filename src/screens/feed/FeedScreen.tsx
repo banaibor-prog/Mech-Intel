@@ -217,14 +217,14 @@ export default function FeedScreen({ navigation }: Props) {
           <CategoryScroller selected={selectedSkill} onSelect={selectCategory} onSeeAll={() => goToTab('ExploreTab')} />
           <ProviderCarousel providers={filteredProviders} onSeeAll={() => navigation.navigate('Discover')} onSelect={(uid) => navigation.navigate('PublicProfile', { uid })} />
           <View style={styles.feedHeading}>
-            <SectionHeader eyebrow="Open work" title={recommendationTitle} subtitle={filteredPosts.length ? `${filteredPosts.length} jobs picked for you` : undefined} />
+            <SectionHeader title={recommendationTitle} subtitle={filteredPosts.length ? `${filteredPosts.length} jobs picked for you` : undefined} />
           </View>
           <FeedTabs active={activeTab} onChange={setActiveTab} />
           <View style={styles.feedGap} />
         </View>}
         ListEmptyComponent={<HomeEmptyState title={activeTab === 'Following' ? 'Your following feed is ready' : 'No matching jobs yet'} message={activeTab === 'Following' ? 'Open professional profiles and build your network to personalize this feed.' : selectedSkill ? 'Try another service category or clear the current filter.' : 'Explore services or post what you need.'} actionLabel={activeTab === 'Following' ? 'Explore professionals' : 'Post a job'} onAction={activeTab === 'Following' ? () => navigation.navigate('Discover') : () => navigation.navigate('CreatePost')} />}
         ListFooterComponent={loadingMore ? <View style={styles.loadingMore}><View style={styles.loadingLine} /><Text style={styles.loadingText}>Finding more opportunities...</Text></View> : <View style={styles.footerSpace} />}
-        renderItem={({ item }) => item.kind === 'professionals' ? <View style={styles.midSection}><ProviderCarousel title="Top rated this month" eyebrow="Highly trusted" providers={[...filteredProviders].sort((a, b) => b.trustScore - a.trustScore).slice(0, 6)} onSeeAll={() => navigation.navigate('Discover')} onSelect={(uid) => navigation.navigate('PublicProfile', { uid })} /></View> : <JobCard post={item.post} saved={savedIds.has(item.post.id)} onSave={() => toggleSaved(item.post)} onOpen={() => navigation.navigate('PostDetail', { postId: item.post.id })} onApply={() => navigation.navigate('PostDetail', { postId: item.post.id })} onAuthor={() => navigation.navigate('PublicProfile', { uid: item.post.authorUid })} />}
+        renderItem={({ item }) => item.kind === 'professionals' ? <View style={styles.midSection}><ProviderCarousel title="Top rated" providers={[...filteredProviders].sort((a, b) => b.trustScore - a.trustScore).slice(0, 6)} onSeeAll={() => navigation.navigate('Discover')} onSelect={(uid) => navigation.navigate('PublicProfile', { uid })} /></View> : <JobCard post={item.post} saved={savedIds.has(item.post.id)} onSave={() => toggleSaved(item.post)} onOpen={() => navigation.navigate('PostDetail', { postId: item.post.id })} onApply={() => navigation.navigate('PostDetail', { postId: item.post.id })} onAuthor={() => navigation.navigate('PublicProfile', { uid: item.post.authorUid })} />}
       />
     </View>
   );

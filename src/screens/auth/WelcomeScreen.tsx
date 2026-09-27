@@ -16,9 +16,8 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import Button from '../../components/Button';
-import CloudHills from '../../components/brand/CloudHills';
+import ContourBackdrop from '../../components/brand/ContourBackdrop';
 import GycLockup from '../../components/brand/GycLockup';
-import KhasiWeave from '../../components/brand/KhasiWeave';
 import { Colors } from '../../constants/Colors';
 import { Spacing } from '../../constants/Spacing';
 import { Fonts } from '../../constants/Typography';
@@ -112,17 +111,16 @@ export default function WelcomeScreen(_props: Props) {
         showsVerticalScrollIndicator={false}
         bounces={false}>
         <View style={[styles.hero, { paddingTop: insets.top + (compact ? Spacing.md : Spacing.lg) }]}>
-          <CloudHills height={compact ? 250 : 300} style={styles.heroBackdrop} />
+          <ContourBackdrop style={styles.heroBackdrop} />
           <Animated.View style={[styles.heroContent, introStyle]}>
             <View style={styles.greeting}>
-              <Text style={styles.greetingText}>Khublei! · Welcome</Text>
+              <Text style={styles.greetingText}>Welcome</Text>
             </View>
-            <GycLockup logoSize={compact ? 118 : 140} style={styles.lockup} />
+            <GycLockup logoSize={compact ? 118 : 140} inverted style={styles.lockup} />
           </Animated.View>
         </View>
 
         <Animated.View style={[styles.sheet, introStyle]}>
-          <KhasiWeave height={9} opacity={0.5} style={styles.sheetWeave} />
           <Text style={[styles.title, compact && styles.titleCompact]}>
             {mode === 'signIn' ? 'Sign in' : 'Create account'}
           </Text>
@@ -226,17 +224,17 @@ const styles = StyleSheet.create({
   scroll: { flexGrow: 1 },
 
   hero: { alignItems: 'center', minHeight: 300 },
-  heroBackdrop: { position: 'absolute', left: 0, right: 0, bottom: 0 },
+  heroBackdrop: { position: 'absolute', top: 0, left: 0, right: 0, bottom: -40 },
   heroContent: { alignItems: 'center' },
   greeting: {
-    backgroundColor: 'rgba(255,255,255,0.8)',
+    backgroundColor: 'rgba(255,255,255,0.08)',
     borderRadius: 999,
     paddingHorizontal: 14,
     paddingVertical: 6,
     borderWidth: 1,
-    borderColor: 'rgba(59,130,246,0.2)',
+    borderColor: 'rgba(255,255,255,0.14)',
   },
-  greetingText: { fontFamily: Fonts.bodySemibold, fontSize: 12.5, color: Colors.accent, letterSpacing: 0.4 },
+  greetingText: { fontFamily: Fonts.bodySemibold, fontSize: 12.5, color: 'rgba(255,255,255,0.8)', letterSpacing: 0.4 },
   lockup: { marginTop: Spacing.md },
 
   sheet: {
@@ -254,7 +252,6 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: -6 },
     elevation: 6,
   },
-  sheetWeave: { position: 'absolute', top: 0, left: 0, right: 0 },
 
   title: {
     fontFamily: Fonts.display,

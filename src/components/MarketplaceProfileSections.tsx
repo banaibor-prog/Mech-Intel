@@ -4,12 +4,10 @@ import LinearGradient from 'react-native-linear-gradient';
 import Avatar from './Avatar';
 import AppIcon from './AppIcon';
 import Button from './Button';
-import BambooTexture from './brand/BambooTexture';
-import MeghalayaSky from './brand/MeghalayaSky';
-import KhasiWeave from './brand/KhasiWeave';
+import ContourBackdrop from './brand/ContourBackdrop';
 import Card from './ui/Card';
 import { categoryStyle } from '../constants/Categories';
-import { Colors, Gradients } from '../constants/Colors';
+import { Colors } from '../constants/Colors';
 import { Fonts } from '../constants/Typography';
 import { Spacing } from '../constants/Spacing';
 import {
@@ -73,8 +71,7 @@ export function ProfileIdentityHeader({ user, provider, trust, isOwner, onEditPh
   return (
     <View style={styles.identityCard}>
       <View style={styles.banner}>
-        <MeghalayaSky animated={false} style={styles.bannerSky} />
-        <KhasiWeave height={8} color={Colors.white} opacity={0.45} bordered={false} style={styles.bannerWeave} />
+        <ContourBackdrop style={styles.bannerSky} />
       </View>
 
       <View style={styles.identityBody}>
@@ -85,7 +82,7 @@ export function ProfileIdentityHeader({ user, provider, trust, isOwner, onEditPh
             disabled={!onEditPhoto}
             onPress={onEditPhoto}
             activeOpacity={0.8}
-            style={[styles.avatarRing, { borderColor: provider ? primary.color : Colors.accent }]}>
+            style={[styles.avatarRing, { borderColor: Colors.border }]}>
             <Avatar name={user.displayName} photoURL={user.photoURL} size={AVATAR} />
             {onEditPhoto ? (
               <View style={styles.photoEdit}>
@@ -146,7 +143,7 @@ export function ProfileStrengthCard({ provider, photoURL, onEdit }: { provider?:
   ];
   const complete = Math.round((checks.filter(Boolean).length / checks.length) * 100);
   return (
-    <Card bamboo style={styles.strengthCard}>
+    <Card style={styles.strengthCard}>
       <View style={styles.strengthTop}>
         <View style={styles.flex}>
           <Text style={styles.eyebrow}>PROFILE STRENGTH</Text>
@@ -155,12 +152,7 @@ export function ProfileStrengthCard({ provider, photoURL, onEdit }: { provider?:
         <Button title="Improve" size="sm" variant="outline" icon="sparkles" onPress={onEdit} />
       </View>
       <View style={styles.progressTrack}>
-        <LinearGradient
-          colors={[...Gradients.brand]}
-          start={{ x: 0, y: 0.5 }}
-          end={{ x: 1, y: 0.5 }}
-          style={[styles.progressFill, { width: `${complete}%` }]}
-        />
+        <View style={[styles.progressFill, { width: `${complete}%` }]} />
       </View>
       <Text style={styles.strengthHint}>
         {complete < 100 ? 'Add services, portfolio work and verification to earn more trust.' : 'Your public profile is ready to be discovered.'}
@@ -197,8 +189,8 @@ export function MarketplaceProfileContent({ user, provider, trust, reviews, isOw
             {provider.skills.slice(0, 6).map((skill) => {
               const cat = categoryStyle(skill);
               return (
-                <View key={skill} style={[styles.skillChip, { backgroundColor: cat.soft, borderColor: `${cat.color}55` }]}>
-                  <AppIcon name={cat.icon} size={14} color={cat.color} />
+                <View key={skill} style={styles.skillChip}>
+                  <AppIcon name={cat.icon} size={14} color={Colors.text} />
                   <Text style={[styles.skillText, { color: Colors.text }]}>{skill}</Text>
                 </View>
               );
@@ -213,7 +205,7 @@ export function MarketplaceProfileContent({ user, provider, trust, reviews, isOw
         {provider?.services?.length ? (
           <View style={styles.serviceList}>
             {provider.services.map((service) => (
-              <Card key={service.id} accent={Colors.bamboo}>
+              <Card key={service.id}>
                 <View style={styles.serviceTop}>
                   <View style={styles.flex}>
                     <Text style={styles.serviceTitle}>{service.title}</Text>
@@ -334,7 +326,6 @@ export function ProfileSection({ title, actionLabel, onAction, children }: Secti
       <View style={styles.sectionHeader}>
         <View>
           <Text style={styles.sectionTitle}>{title}</Text>
-          <KhasiWeave height={6} opacity={0.55} bordered={false} style={styles.sectionWeave} />
         </View>
         {actionLabel && onAction ? (
           <TouchableOpacity accessibilityRole="button" onPress={onAction} hitSlop={8}>
@@ -371,8 +362,8 @@ function Fact({ icon, text }: { icon: 'clock' | 'users'; text: string }) {
 function Insight({ icon, color, value, label }: { icon: 'briefcase' | 'verified' | 'users' | 'bolt'; color: string; value: string; label: string }) {
   return (
     <View style={styles.insight}>
-      <View style={[styles.insightIcon, { backgroundColor: `${color}16` }]}>
-        <AppIcon name={icon} size={15} color={color} />
+      <View style={styles.insightIcon}>
+        <AppIcon name={icon} size={15} color={Colors.text} />
       </View>
       <Text style={styles.insightValue}>{value}</Text>
       <Text style={styles.insightLabel}>{label}</Text>
@@ -425,17 +416,17 @@ function PortfolioGrid({ items }: { items: PortfolioProject[] }) {
         const cat = categoryStyle(item.skills[0]);
         const image = item.mediaUrls?.[0];
         return (
-          <View key={item.id} style={[styles.portfolioTile, { backgroundColor: cat.soft }]}>
-            {image ? <Image source={{ uri: image }} style={styles.portfolioImage} /> : <BambooTexture color={cat.color} opacity={0.14} />}
+          <View key={item.id} style={[styles.portfolioTile, { backgroundColor: '#F1F5F9' }]}>
+            {image ? <Image source={{ uri: image }} style={styles.portfolioImage} /> : null}
             {image ? (
               <LinearGradient colors={['transparent', 'rgba(15,23,42,0.78)']} style={styles.portfolioShade} />
             ) : (
               <View style={[styles.portfolioBadge, { backgroundColor: Colors.surface }]}>
-                <AppIcon name={cat.icon} size={16} color={cat.color} />
+                <AppIcon name={cat.icon} size={16} color={Colors.text} />
               </View>
             )}
             <View style={styles.portfolioOverlay}>
-              <Text style={[styles.portfolioSkill, image ? styles.onImage : { color: cat.color }]} numberOfLines={1}>
+              <Text style={[styles.portfolioSkill, image ? styles.onImage : null]} numberOfLines={1}>
                 {item.skills.slice(0, 2).join(' · ') || 'Project'}
               </Text>
               <Text style={[styles.portfolioTitle, image ? styles.onImage : null]} numberOfLines={2}>
@@ -481,7 +472,6 @@ const styles = StyleSheet.create({
   },
   banner: { height: 86, overflow: 'hidden' },
   bannerSky: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 },
-  bannerWeave: { position: 'absolute', bottom: 8, left: 0, right: 0 },
   identityBody: { paddingHorizontal: Spacing.md, paddingBottom: Spacing.md },
   avatarRow: { flexDirection: 'row', alignItems: 'flex-end', marginTop: -(AVATAR / 2 + 4) },
   avatarRing: { borderWidth: 3, borderRadius: AVATAR / 2 + 6, padding: 2, backgroundColor: Colors.surface },
@@ -538,13 +528,12 @@ const styles = StyleSheet.create({
   eyebrow: { color: Colors.accent, fontFamily: Fonts.bodyBold, fontSize: 10, letterSpacing: 1.8 },
   strengthTitle: { color: Colors.text, fontFamily: Fonts.display, fontSize: 18, marginTop: 3 },
   progressTrack: { height: 8, borderRadius: 8, backgroundColor: Colors.surfaceAlt, overflow: 'hidden', marginTop: 14 },
-  progressFill: { height: '100%', borderRadius: 8 },
+  progressFill: { height: '100%', borderRadius: 8, backgroundColor: Colors.accent },
   strengthHint: { color: Colors.textLight, fontFamily: Fonts.body, fontSize: 12, lineHeight: 17, marginTop: 9 },
 
   section: { marginTop: Spacing.lg },
   sectionHeader: { flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 10 },
   sectionTitle: { color: Colors.text, fontFamily: Fonts.display, fontSize: 18, letterSpacing: -0.3 },
-  sectionWeave: { width: 64, marginTop: 4 },
   sectionAction: { color: Colors.accent, fontFamily: Fonts.bodyBold, fontSize: 13, marginTop: 3 },
   bodyText: { color: Colors.textLight, fontFamily: Fonts.body, fontSize: 14, lineHeight: 21 },
   supportingText: { color: Colors.textLight, fontFamily: Fonts.bodyMedium, fontSize: 12, marginTop: 6 },
@@ -553,7 +542,7 @@ const styles = StyleSheet.create({
   factText: { color: Colors.text, fontFamily: Fonts.bodySemibold, fontSize: 12 },
 
   chipWrap: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  skillChip: { flexDirection: 'row', alignItems: 'center', gap: 6, borderWidth: 1, paddingHorizontal: 12, paddingVertical: 8, borderRadius: 999 },
+  skillChip: { flexDirection: 'row', alignItems: 'center', gap: 6, borderWidth: 1, borderColor: Colors.border, backgroundColor: Colors.surface, paddingHorizontal: 12, paddingVertical: 8, borderRadius: 999 },
   skillText: { fontFamily: Fonts.bodySemibold, fontSize: 12.5 },
 
   emptyHint: {
@@ -593,7 +582,7 @@ const styles = StyleSheet.create({
   portfolioShade: { position: 'absolute', left: 0, right: 0, bottom: 0, height: '60%' },
   portfolioBadge: { position: 'absolute', top: 10, left: 10, width: 32, height: 32, borderRadius: 16, alignItems: 'center', justifyContent: 'center' },
   portfolioOverlay: { padding: 12 },
-  portfolioSkill: { fontFamily: Fonts.bodyBold, fontSize: 10, letterSpacing: 0.6, textTransform: 'uppercase' },
+  portfolioSkill: { color: Colors.textLight, fontFamily: Fonts.bodyBold, fontSize: 10, letterSpacing: 0.6, textTransform: 'uppercase' },
   portfolioTitle: { color: Colors.text, fontFamily: Fonts.display, fontSize: 13.5, lineHeight: 18, marginTop: 3 },
   onImage: { color: Colors.white },
 
@@ -613,7 +602,7 @@ const styles = StyleSheet.create({
 
   insightGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
   insight: { width: '48.4%', backgroundColor: Colors.surface, borderWidth: 1, borderColor: Colors.border, borderRadius: 18, padding: 14 },
-  insightIcon: { width: 30, height: 30, borderRadius: 10, alignItems: 'center', justifyContent: 'center', marginBottom: 10 },
+  insightIcon: { width: 30, height: 30, borderRadius: 10, alignItems: 'center', justifyContent: 'center', marginBottom: 10, backgroundColor: '#F1F5F9' },
   insightValue: { color: Colors.text, fontFamily: Fonts.display, fontSize: 18 },
   insightLabel: { color: Colors.textLight, fontFamily: Fonts.bodyMedium, fontSize: 11.5, marginTop: 2 },
 

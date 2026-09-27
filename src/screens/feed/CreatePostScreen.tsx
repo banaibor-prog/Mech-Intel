@@ -17,7 +17,6 @@ import AppIcon from '../../components/AppIcon';
 import Card from '../../components/ui/Card';
 import Chip from '../../components/ui/Chip';
 import TextField from '../../components/ui/TextField';
-import KhasiWeave from '../../components/brand/KhasiWeave';
 import { Colors } from '../../constants/Colors';
 import { Spacing } from '../../constants/Spacing';
 import { Fonts } from '../../constants/Typography';
@@ -159,7 +158,6 @@ export default function CreatePostScreen({ navigation }: Props) {
   return (
     <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
       <Text style={styles.intro}>Tell nearby pros what you need. Your job appears on the feed and on the Explore map.</Text>
-      <KhasiWeave height={10} opacity={0.35} style={styles.weave} />
 
       <Card style={styles.section}>
         <TextField label="What do you need help with?" placeholder="e.g. Need an electrician today" value={title} onChangeText={setTitle} />
@@ -167,7 +165,7 @@ export default function CreatePostScreen({ navigation }: Props) {
         <View style={styles.chipGrid}>
           {SKILL_CATEGORIES.map((c) => {
             const cat = categoryStyle(c);
-            return <Chip key={c} label={c} icon={cat.icon} color={cat.color} active={skill === c} onPress={() => setSkill(c)} />;
+            return <Chip key={c} label={c} icon={cat.icon} active={skill === c} onPress={() => setSkill(c)} />;
           })}
         </View>
         <TextField
@@ -189,7 +187,7 @@ export default function CreatePostScreen({ navigation }: Props) {
         />
       </Card>
 
-      <Card style={styles.section} accent={selected?.color ?? Colors.accent}>
+      <Card style={styles.section}>
         <View style={styles.locationRow}>
           <View style={[styles.pinBadge, { backgroundColor: selected?.soft ?? Colors.accentSoft }]}>
             <AppIcon name="location" size={20} color={selected?.color ?? Colors.accent} />
@@ -271,7 +269,6 @@ const styles = StyleSheet.create({
     flexGrow: 1,
   },
   intro: { fontFamily: Fonts.body, fontSize: 14, lineHeight: 20, color: Colors.textLight },
-  weave: { marginTop: Spacing.sm, marginBottom: Spacing.xs },
   section: { marginTop: Spacing.md },
   flex: { flex: 1 },
   label: {

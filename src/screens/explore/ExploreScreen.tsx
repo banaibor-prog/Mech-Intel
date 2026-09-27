@@ -26,7 +26,6 @@ import {
 import Supercluster from 'supercluster';
 import AppIcon, { AppIconName } from '../../components/AppIcon';
 import GycLoader from '../../components/GycLoader';
-import KhasiWeave from '../../components/brand/KhasiWeave';
 import { CATEGORY_STYLES, categoryStyle } from '../../constants/Categories';
 import { Colors } from '../../constants/Colors';
 import { Fonts } from '../../constants/Typography';
@@ -452,7 +451,6 @@ export default function ExploreScreen({ navigation, route }: Props) {
             );
           })}
         </ScrollView>
-        <KhasiWeave height={7} opacity={0.45} color={Colors.accent} style={styles.hudWeave} />
       </View>
 
       {/* Map controls */}
@@ -829,7 +827,6 @@ const styles = StyleSheet.create({
   hudRow: { flexDirection: 'row', alignItems: 'center' },
   hudEyebrow: { fontFamily: Fonts.bodyBold, fontSize: 10, letterSpacing: 2 },
   hudTitle: { fontFamily: Fonts.display, fontSize: 16, marginTop: 2, letterSpacing: -0.2 },
-  hudWeave: { marginTop: 10 },
   segment: { flexDirection: 'row', borderRadius: 12, padding: 3, marginTop: 10 },
   segmentBtn: { flex: 1, paddingVertical: 7, borderRadius: 9, alignItems: 'center' },
   segmentBtnActive: { backgroundColor: Colors.accent },

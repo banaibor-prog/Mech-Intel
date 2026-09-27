@@ -10,8 +10,7 @@ import {
   View,
   ViewStyle,
 } from 'react-native';
-import LinearGradient from 'react-native-linear-gradient';
-import { Colors, Gradients } from '../constants/Colors';
+import { Colors } from '../constants/Colors';
 import { Fonts } from '../constants/Typography';
 import AppIcon, { AppIconName } from './AppIcon';
 
@@ -97,13 +96,7 @@ function Button({
           style,
           { transform: [{ scale }] },
         ]}>
-        {variant === 'primary' ? (
-          <LinearGradient colors={[...Gradients.brand]} start={{ x: 0, y: 0.5 }} end={{ x: 1, y: 0.5 }} style={styles.gradient}>
-            {content}
-          </LinearGradient>
-        ) : (
-          content
-        )}
+        {content}
       </Animated.View>
     </TouchableWithoutFeedback>
   );
@@ -111,18 +104,10 @@ function Button({
 
 const styles = StyleSheet.create({
   button: {
-    borderRadius: 16,
+    borderRadius: 14,
     overflow: 'hidden',
   },
-  gradient: { borderRadius: 16 },
-  primaryShadow: {
-    shadowColor: '#3F5BEF',
-    shadowOpacity: 0.3,
-    shadowRadius: 12,
-    shadowOffset: { width: 0, height: 6 },
-    elevation: 4,
-    backgroundColor: Colors.accent,
-  },
+  primaryShadow: { backgroundColor: Colors.accent },
   dark: { backgroundColor: Colors.ink },
   outline: {
     backgroundColor: Colors.surface,

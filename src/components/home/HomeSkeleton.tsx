@@ -1,7 +1,7 @@
 import React from 'react';
 import { StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import MeghalayaSky from '../brand/MeghalayaSky';
+import ContourBackdrop from '../brand/ContourBackdrop';
 import GycLoader from '../GycLoader';
 import { Colors } from '../../constants/Colors';
 
@@ -9,7 +9,7 @@ export default function HomeSkeleton() {
   const insets = useSafeAreaInsets();
   return (
     <View style={styles.screen}>
-      <MeghalayaSky height={insets.top + 300} style={styles.sky} />
+      <ContourBackdrop height={insets.top + 300} style={styles.sky} />
       <GycLoader size={110} label="Finding work near you…" style={styles.loader} />
     </View>
   );

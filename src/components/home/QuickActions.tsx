@@ -1,6 +1,5 @@
 import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import LinearGradient from 'react-native-linear-gradient';
 import AppIcon, { AppIconName } from '../AppIcon';
 import { Colors } from '../../constants/Colors';
 import { Fonts } from '../../constants/Typography';
@@ -13,11 +12,11 @@ interface Props {
   onOfferService: () => void;
 }
 
-const ACTIONS: { key: keyof Props; label: string; icon: AppIconName; colors: [string, string] }[] = [
-  { key: 'onPostJob', label: 'Post a job', icon: 'plus', colors: ['#3B82F6', '#7C3AED'] },
-  { key: 'onFindPros', label: 'Find pros', icon: 'users', colors: ['#06B6D4', '#3B82F6'] },
-  { key: 'onOpenMap', label: 'Live map', icon: 'map', colors: ['#10B981', '#0EA5E9'] },
-  { key: 'onOfferService', label: 'Offer work', icon: 'briefcase', colors: ['#D9A55B', '#B07A3A'] },
+const ACTIONS: { key: keyof Props; label: string; icon: AppIconName; primary?: boolean }[] = [
+  { key: 'onPostJob', label: 'Post a job', icon: 'plus', primary: true },
+  { key: 'onFindPros', label: 'Find pros', icon: 'users' },
+  { key: 'onOpenMap', label: 'Live map', icon: 'map' },
+  { key: 'onOfferService', label: 'Offer work', icon: 'briefcase' },
 ];
 
 /** A single dock of the four things people come to Home to do. */
@@ -32,9 +31,9 @@ export default function QuickActions(props: Props) {
           style={styles.item}
           onPress={props[action.key]}
           activeOpacity={0.8}>
-          <LinearGradient colors={action.colors} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.icon}>
-            <AppIcon name={action.icon} size={22} color={Colors.white} />
-          </LinearGradient>
+          <View style={[styles.icon, action.primary && styles.iconPrimary]}>
+            <AppIcon name={action.icon} size={22} color={action.primary ? Colors.white : Colors.text} />
+          </View>
           <Text style={styles.label}>{action.label}</Text>
         </TouchableOpacity>
       ))}
@@ -52,25 +51,10 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.surface,
     borderRadius: 24,
     borderWidth: 1,
-    borderColor: '#EDF1F7',
-    shadowColor: '#1E3A8A',
-    shadowOpacity: 0.07,
-    shadowRadius: 18,
-    shadowOffset: { width: 0, height: 8 },
-    elevation: 3,
+    borderColor: Colors.border,
   },
   item: { flex: 1, alignItems: 'center' },
-  icon: {
-    width: 54,
-    height: 54,
-    borderRadius: 19,
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: '#1E3A8A',
-    shadowOpacity: 0.18,
-    shadowRadius: 10,
-    shadowOffset: { width: 0, height: 5 },
-    elevation: 3,
-  },
+  icon: { width: 54, height: 54, borderRadius: 18, alignItems: 'center', justifyContent: 'center', backgroundColor: '#F1F5F9' },
+  iconPrimary: { backgroundColor: Colors.ink },
   label: { color: Colors.text, fontFamily: Fonts.bodySemibold, fontSize: 12, marginTop: 8 },
 });

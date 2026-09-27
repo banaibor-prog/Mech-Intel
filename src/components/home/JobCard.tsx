@@ -49,11 +49,11 @@ export default function JobCard({ post, saved, onSave, onOpen, onApply, onAuthor
     <View style={styles.card}>
       <TouchableOpacity accessibilityRole="button" onPress={onOpen} activeOpacity={0.88}>
         <View style={styles.header}>
-          <View style={[styles.catIcon, { backgroundColor: cat.soft }]}>
-            <AppIcon name={cat.icon} size={18} color={cat.color} />
+          <View style={styles.catIcon}>
+            <AppIcon name={cat.icon} size={18} color={Colors.text} />
           </View>
           <View style={styles.flex}>
-            <Text style={[styles.catText, { color: cat.color }]}>{post.skill}</Text>
+            <Text style={styles.catText}>{post.skill}</Text>
             <Text style={styles.posted}>
               {timeAgo(post.createdAt)}
               {place ? ` · ${place}` : ''}
@@ -61,7 +61,7 @@ export default function JobCard({ post, saved, onSave, onOpen, onApply, onAuthor
           </View>
           {urgent ? (
             <View style={styles.urgentChip}>
-              <AppIcon name="fire" size={12} color="#E11D48" filled />
+              <View style={styles.urgentDot} />
               <Text style={styles.urgentText}>Today</Text>
             </View>
           ) : null}
@@ -132,24 +132,20 @@ const styles = StyleSheet.create({
   flex: { flex: 1 },
   card: {
     marginHorizontal: Spacing.md,
-    marginBottom: 14,
+    marginBottom: 12,
     backgroundColor: Colors.surface,
-    borderRadius: 26,
+    borderRadius: 22,
     padding: 16,
     borderWidth: 1,
-    borderColor: '#EDF1F7',
-    shadowColor: '#1E3A8A',
-    shadowOpacity: 0.07,
-    shadowRadius: 16,
-    shadowOffset: { width: 0, height: 8 },
-    elevation: 2,
+    borderColor: Colors.border,
   },
   header: { flexDirection: 'row', alignItems: 'center', gap: 10 },
-  catIcon: { width: 40, height: 40, borderRadius: 14, alignItems: 'center', justifyContent: 'center' },
-  catText: { fontFamily: Fonts.bodyBold, fontSize: 12.5 },
+  catIcon: { width: 40, height: 40, borderRadius: 13, alignItems: 'center', justifyContent: 'center', backgroundColor: '#F1F5F9' },
+  catText: { color: Colors.text, fontFamily: Fonts.bodySemibold, fontSize: 13 },
   posted: { color: Colors.textMuted, fontFamily: Fonts.bodyMedium, fontSize: 11.5, marginTop: 1 },
-  urgentChip: { flexDirection: 'row', alignItems: 'center', gap: 3, backgroundColor: '#FFE4E6', borderRadius: 999, paddingHorizontal: 9, paddingVertical: 5 },
-  urgentText: { color: '#E11D48', fontFamily: Fonts.bodyBold, fontSize: 11 },
+  urgentChip: { flexDirection: 'row', alignItems: 'center', gap: 5, borderWidth: 1, borderColor: Colors.border, borderRadius: 999, paddingHorizontal: 9, paddingVertical: 4 },
+  urgentDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: '#EF4444' },
+  urgentText: { color: Colors.text, fontFamily: Fonts.bodySemibold, fontSize: 11 },
   saveButton: { width: 34, height: 34, borderRadius: 12, backgroundColor: Colors.background, alignItems: 'center', justifyContent: 'center' },
   title: { color: Colors.text, fontFamily: Fonts.display, fontSize: 18, lineHeight: 24, letterSpacing: -0.3, marginTop: 14 },
   description: { color: Colors.textLight, fontFamily: Fonts.body, fontSize: 13.5, lineHeight: 20, marginTop: 5 },
@@ -163,7 +159,7 @@ const styles = StyleSheet.create({
   budgetLabel: { color: Colors.textMuted, fontFamily: Fonts.bodyMedium, fontSize: 11 },
   infoDivider: { width: 1, height: 28, backgroundColor: Colors.border, marginHorizontal: 14 },
   infoValue: { color: Colors.text, fontFamily: Fonts.display, fontSize: 19 },
-  apply: { minWidth: 108, borderRadius: 14 },
+  apply: { minWidth: 104, borderRadius: 12 },
   authorRow: {
     flexDirection: 'row',
     alignItems: 'center',

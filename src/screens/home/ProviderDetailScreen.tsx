@@ -4,9 +4,8 @@ import AppIcon, { AppIconName } from '../../components/AppIcon';
 import Avatar from '../../components/Avatar';
 import Button from '../../components/Button';
 import GycLoader from '../../components/GycLoader';
-import MeghalayaSky from '../../components/brand/MeghalayaSky';
+import ContourBackdrop from '../../components/brand/ContourBackdrop';
 import GycLogo from '../../components/brand/GycLogo';
-import KhasiWeave from '../../components/brand/KhasiWeave';
 import Card from '../../components/ui/Card';
 import Chip from '../../components/ui/Chip';
 import TextField from '../../components/ui/TextField';
@@ -105,13 +104,12 @@ export default function ProviderDetailScreen({ route, navigation }: Props) {
     <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
       <View style={styles.hero}>
         <View style={styles.banner}>
-          <MeghalayaSky animated={false} style={styles.bannerSky} />
-          <KhasiWeave height={8} color={Colors.white} opacity={0.45} bordered={false} style={styles.bannerWeave} />
+          <ContourBackdrop style={styles.bannerSky} />
         </View>
         <View style={styles.heroBody}>
-          <View style={[styles.avatarRing, { borderColor: primary.color }]}>
+          <View style={[styles.avatarRing, { borderColor: Colors.border }]}>
             <Avatar name={name} photoURL={ownerProfile?.photoURL} size={AVATAR} />
-            <View style={[styles.catBadge, { backgroundColor: primary.color }]}>
+            <View style={[styles.catBadge, { backgroundColor: Colors.ink }]}>
               <AppIcon name={primary.icon} size={13} color={Colors.white} />
             </View>
           </View>
@@ -133,18 +131,16 @@ export default function ProviderDetailScreen({ route, navigation }: Props) {
       </View>
 
       <Text style={styles.sectionTitle}>Skills</Text>
-      <KhasiWeave height={6} opacity={0.55} bordered={false} style={styles.sectionWeave} />
       <View style={styles.chipWrap}>
         {provider.skills.map((s) => {
           const cat = categoryStyle(s);
-          return <Chip key={s} label={s} icon={cat.icon} color={cat.color} />;
+          return <Chip key={s} label={s} icon={cat.icon} />;
         })}
       </View>
 
       {provider.bio ? (
         <>
           <Text style={styles.sectionTitle}>About</Text>
-          <KhasiWeave height={6} opacity={0.55} bordered={false} style={styles.sectionWeave} />
           <Card>
             <Text style={styles.bio}>{provider.bio}</Text>
           </Card>
@@ -152,15 +148,14 @@ export default function ProviderDetailScreen({ route, navigation }: Props) {
       ) : null}
 
       <Text style={styles.sectionTitle}>Request a booking</Text>
-      <KhasiWeave height={6} opacity={0.55} bordered={false} style={styles.sectionWeave} />
-      <Card accent={skill ? categoryStyle(skill).color : Colors.accent}>
+      <Card>
         {provider.skills.length > 1 ? (
           <>
             <Text style={styles.label}>What do you need?</Text>
             <View style={styles.chipWrap}>
               {provider.skills.map((s) => {
                 const cat = categoryStyle(s);
-                return <Chip key={s} label={s} icon={cat.icon} color={cat.color} active={skill === s} onPress={() => setSkill(s)} />;
+                return <Chip key={s} label={s} icon={cat.icon} active={skill === s} onPress={() => setSkill(s)} />;
               })}
             </View>
           </>
@@ -220,7 +215,6 @@ const styles = StyleSheet.create({
   },
   banner: { height: 80, overflow: 'hidden' },
   bannerSky: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 },
-  bannerWeave: { position: 'absolute', bottom: 8, left: 0, right: 0 },
   heroBody: { alignItems: 'center', paddingHorizontal: Spacing.md, paddingBottom: Spacing.md },
   avatarRing: {
     marginTop: -(AVATAR / 2 + 6),
@@ -261,8 +255,7 @@ const styles = StyleSheet.create({
   statValue: { fontSize: 15, fontFamily: Fonts.display, color: Colors.text, marginTop: 6 },
   statLabel: { fontSize: 11, fontFamily: Fonts.bodyMedium, color: Colors.textLight, marginTop: 2 },
 
-  sectionTitle: { fontSize: 18, fontFamily: Fonts.display, color: Colors.text, marginTop: Spacing.lg, letterSpacing: -0.3 },
-  sectionWeave: { width: 64, marginTop: 4, marginBottom: 10 },
+  sectionTitle: { fontSize: 18, fontFamily: Fonts.display, color: Colors.text, marginTop: Spacing.lg, marginBottom: 10, letterSpacing: -0.3 },
   chipWrap: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   bio: { fontSize: 14, fontFamily: Fonts.body, color: Colors.textLight, lineHeight: 21 },
   label: { fontFamily: Fonts.bodySemibold, fontSize: 13, color: Colors.textLight, marginBottom: 8 },

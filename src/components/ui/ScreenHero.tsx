@@ -1,6 +1,6 @@
 import React from 'react';
 import { StyleProp, StyleSheet, Text, View, ViewStyle } from 'react-native';
-import MeghalayaSky from '../brand/MeghalayaSky';
+import ContourBackdrop from '../brand/ContourBackdrop';
 import { Colors } from '../../constants/Colors';
 import { Fonts } from '../../constants/Typography';
 
@@ -20,10 +20,10 @@ interface ScreenHeroProps {
 export default function ScreenHero({ topInset, eyebrow, title, subtitle, right, children, height = 170, style }: ScreenHeroProps) {
   return (
     <View style={[styles.wrap, { paddingTop: topInset + 14, minHeight: topInset + height }, style]}>
-      <MeghalayaSky animated={false} style={styles.backdrop} />
+      <ContourBackdrop style={styles.backdrop} />
       <View style={styles.row}>
         <View style={styles.flex}>
-          {eyebrow ? <Text style={styles.eyebrow}>{eyebrow.toUpperCase()}</Text> : null}
+          {eyebrow ? <Text style={styles.eyebrow}>{eyebrow}</Text> : null}
           <Text style={styles.title}>{title}</Text>
           {subtitle ? <Text style={styles.subtitle}>{subtitle}</Text> : null}
         </View>
@@ -39,7 +39,7 @@ const styles = StyleSheet.create({
   backdrop: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 },
   row: { flexDirection: 'row', alignItems: 'flex-start' },
   flex: { flex: 1 },
-  eyebrow: { color: '#67E8F9', fontFamily: Fonts.bodyBold, fontSize: 10.5, letterSpacing: 2 },
+  eyebrow: { color: 'rgba(255,255,255,0.55)', fontFamily: Fonts.bodySemibold, fontSize: 12 },
   title: { color: Colors.white, fontFamily: Fonts.display, fontSize: 28, lineHeight: 34, letterSpacing: -0.6, marginTop: 2 },
-  subtitle: { color: 'rgba(224,231,255,0.75)', fontFamily: Fonts.bodyMedium, fontSize: 13.5, lineHeight: 19, marginTop: 4, maxWidth: 300 },
+  subtitle: { color: 'rgba(255,255,255,0.65)', fontFamily: Fonts.bodyMedium, fontSize: 13.5, lineHeight: 19, marginTop: 4, maxWidth: 300 },
 });

@@ -6,7 +6,6 @@ import AppIcon from '../../components/AppIcon';
 import Avatar from '../../components/Avatar';
 import GycLoader from '../../components/GycLoader';
 import GycLogo from '../../components/brand/GycLogo';
-import KhasiWeave from '../../components/brand/KhasiWeave';
 import Card from '../../components/ui/Card';
 import { Colors } from '../../constants/Colors';
 import { Spacing } from '../../constants/Spacing';
@@ -105,11 +104,10 @@ export default function ModerationScreen() {
           <Text style={styles.subtitle}>
             {rows.length} recent {rows.length === 1 ? 'report' : 'reports'} and blocks
           </Text>
-          <KhasiWeave height={8} opacity={0.35} bordered={false} style={styles.weave} />
         </View>
       }
       renderItem={({ item }) => (
-        <Card style={styles.row} accent={item.type === 'report' ? Colors.error : Colors.textMuted}>
+        <Card style={styles.row}>
           <View style={styles.rowTop}>
             <View style={[styles.typeBadge, item.type === 'report' ? styles.typeBadgeReport : styles.typeBadgeBlock]}>
               <AppIcon name={item.type === 'report' ? 'bell' : 'close'} size={11} color={item.type === 'report' ? Colors.error : Colors.textLight} />
@@ -168,7 +166,6 @@ const styles = StyleSheet.create({
   content: { padding: Spacing.md },
   header: { marginBottom: Spacing.md },
   eyebrow: { fontFamily: Fonts.bodyBold, fontSize: 10.5, letterSpacing: 2, color: Colors.accent, marginBottom: 2 },
-  weave: { marginTop: Spacing.md },
   title: {
     fontFamily: Fonts.display,
     fontSize: 24,
