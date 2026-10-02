@@ -213,10 +213,6 @@ export default function ProfileScreen() {
           ) : null}
 
           <MarketplaceProfileContent user={publicUser} provider={provider} trust={trust} reviews={reviews} isOwner onEdit={(section) => openEditor(section)} />
-
-          {profile?.isAdmin ? (
-            <Button title="Admin console" icon="layers" variant="dark" onPress={() => navigation.navigate('AdminHome')} style={styles.adminButton} />
-          ) : null}
           <TouchableOpacity accessibilityRole="button" style={styles.signOut} onPress={signOutNow}>
             <Text style={styles.signOutText}>Sign out</Text>
           </TouchableOpacity>
@@ -452,7 +448,6 @@ const styles = StyleSheet.create({
   startTitle: { color: Colors.white, fontFamily: Fonts.display, fontSize: 19 },
   startText: { color: 'rgba(255,255,255,0.76)', fontFamily: Fonts.body, fontSize: 13, lineHeight: 19, marginTop: 6 },
   startButton: { marginTop: 16 },
-  adminButton: { marginTop: Spacing.lg },
   signOut: { alignItems: 'center', paddingVertical: Spacing.lg, marginTop: Spacing.sm },
   signOutText: { color: Colors.error, fontFamily: Fonts.bodyBold, fontSize: 13.5 },
 

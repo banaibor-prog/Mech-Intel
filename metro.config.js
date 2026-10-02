@@ -14,6 +14,9 @@ const blockList = new RegExp(
     /android[\\/]\.gradle[\\/].*/,
     /android[\\/]build[\\/].*/,
     /android[\\/]app[\\/]build[\\/].*/,
+    // The admin web app is a separate Vite project with its own node_modules.
+    /admin-web[\\/].*/,
+    /functions[\\/]node_modules[\\/].*/,
   ]
     .map((re) => re.source)
     .join('|')

@@ -209,7 +209,6 @@ export default function FeedScreen({ navigation }: Props) {
             onLocationPress={() => navigation.navigate('Discover')}
             onProfilePress={() => navigation.navigate('Profile')}
             onNotificationsPress={() => goToTab('NetworkTab')}
-            onAdminPress={profile?.isAdmin ? () => navigation.navigate('AdminHome') : undefined}
             onFilterPress={() => goToTab('ExploreTab')}
           />
           {config.announcement.active && (config.announcement.title || config.announcement.message) ? (

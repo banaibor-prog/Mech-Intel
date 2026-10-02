@@ -20,8 +20,6 @@ interface Props {
   onLocationPress: () => void;
   onProfilePress: () => void;
   onNotificationsPress: () => void;
-  /** Shown only for admins: opens the admin console. */
-  onAdminPress?: () => void;
   onFilterPress: () => void;
 }
 
@@ -48,7 +46,6 @@ export default function HomeHeader({
   onLocationPress,
   onProfilePress,
   onNotificationsPress,
-  onAdminPress,
   onFilterPress,
 }: Props) {
   const firstName = displayName.trim().split(' ')[0] || 'there';
@@ -73,11 +70,6 @@ export default function HomeHeader({
               {firstName}
             </Text>
           </View>
-          {onAdminPress ? (
-            <TouchableOpacity accessibilityRole="button" accessibilityLabel="Admin console" style={[styles.glassButton, styles.adminButton]} onPress={onAdminPress}>
-              <AppIcon name="layers" size={19} color={Colors.white} />
-            </TouchableOpacity>
-          ) : null}
           <TouchableOpacity accessibilityRole="button" accessibilityLabel="Notifications" style={styles.glassButton} onPress={onNotificationsPress}>
             <AppIcon name="bell" size={19} color={Colors.white} />
             <View style={styles.notificationDot} />
@@ -147,7 +139,6 @@ const styles = StyleSheet.create({
   identityCopy: { flex: 1, marginLeft: 12 },
   eyebrow: { color: 'rgba(255,255,255,0.6)', fontFamily: Fonts.bodyMedium, fontSize: 12.5 },
   greeting: { color: Colors.white, fontFamily: Fonts.display, fontSize: 21, letterSpacing: -0.3, marginTop: 1 },
-  adminButton: { marginRight: 8 },
   glassButton: {
     width: 44,
     height: 44,

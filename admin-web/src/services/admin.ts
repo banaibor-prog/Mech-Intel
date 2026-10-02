@@ -14,7 +14,7 @@ import {
   where,
   QueryConstraint,
 } from 'firebase/firestore';
-import { db } from '../config/firebase';
+import { db } from '../firebase';
 import {
   AdminActionType,
   AdminLog,
@@ -27,10 +27,11 @@ import {
   TrustActionStatus,
   TrustSummary,
   UserProfile,
-} from '../types/models';
+} from '../../../src/types/models';
 
-// Everything here touches live Firestore data only (never the built-in demo content)
-// and is permitted by firestore.rules only when the caller's users doc has isAdmin.
+// Admin data access for the web console. Everything here touches live Firestore data only
+// (never the app's built-in demo content) and is permitted by firestore.rules only when the
+// signed-in user's users doc has isAdmin: true.
 
 const LIST_LIMIT = 300;
 const DAY = 24 * 60 * 60 * 1000;
