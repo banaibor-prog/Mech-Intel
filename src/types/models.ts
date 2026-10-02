@@ -34,8 +34,16 @@ export interface UserProfile {
   lastCoords?: GeoPoint;
   isProvider: boolean;
   createdAt: number;
-  /** Grants access to the moderation queue. Set manually in Firestore — there is no in-app way to grant this. */
+  /**
+   * Grants access to the admin console. Only an existing admin can grant it (from the
+   * console), or it is set by hand in Firestore for the very first admin.
+   */
   isAdmin?: boolean;
+  /** Set by an admin: a suspended user can still sign in but sees a notice and cannot act. */
+  suspended?: boolean;
+  suspendedReason?: string;
+  suspendedAt?: number;
+  suspendedBy?: string;
 }
 
 export type ReviewRelationship = 'hiredProvider' | 'workedForCustomer';
@@ -71,6 +79,9 @@ export interface WorkReference {
 
 export type TrustActionType = 'report' | 'block';
 
+/** Absent means the report is still open. Dismissed reports no longer count against trust. */
+export type TrustActionStatus = 'open' | 'resolved' | 'dismissed';
+
 export interface TrustAction {
   id: string;
   targetUid: string;
@@ -79,6 +90,10 @@ export interface TrustAction {
   reason: string;
   note?: string;
   createdAt: number;
+  status?: TrustActionStatus;
+  resolution?: string;
+  resolvedBy?: string;
+  resolvedAt?: number;
 }
 
 export interface TrustSummary {
@@ -217,6 +232,11 @@ export interface Post {
   likeCount: number;
   applicantCount: number;
   createdAt: number;
+  /** Set by an admin to take a post out of the feed and map without deleting it. */
+  hidden?: boolean;
+  hiddenReason?: string;
+  hiddenAt?: number;
+  hiddenBy?: string;
 }
 
 export interface Application {
@@ -248,3 +268,47 @@ export const SKILL_CATEGORIES = [
   'Freelance Developer',
   'Other',
 ] as const;
+
+export type AnnouncementTone = 'info' | 'warning' | 'success';
+
+/** App-wide settings stored at config/app and edited from the admin console. */
+export interface AppConfig {
+  maintenance: { enabled: boolean; message: string };
+  announcement: { active: boolean; title: string; message: string; tone: AnnouncementTone };
+  /** When false, only admins can post new jobs. */
+  allowNewPosts: boolean;
+  /** Show the built-in sample jobs and pros alongside real ones. */
+  showDemoContent: boolean;
+  supportEmail?: string;
+  updatedAt?: number;
+  updatedBy?: string;
+}
+
+export type AdminActionType =
+  | 'user.suspend'
+  | 'user.unsuspend'
+  | 'user.grantAdmin'
+  | 'user.revokeAdmin'
+  | 'provider.verify'
+  | 'provider.unverify'
+  | 'post.hide'
+  | 'post.unhide'
+  | 'post.delete'
+  | 'booking.cancel'
+  | 'report.resolve'
+  | 'report.dismiss'
+  | 'review.delete'
+  | 'config.update';
+
+/** Append-only record of every change made from the admin console. */
+export interface AdminLog {
+  id: string;
+  actorUid: string;
+  actorName: string;
+  action: AdminActionType;
+  targetType: 'user' | 'provider' | 'post' | 'booking' | 'report' | 'review' | 'config';
+  targetId: string;
+  summary: string;
+  note?: string;
+  createdAt: number;
+}

@@ -27,6 +27,7 @@ import { approximate, getCurrentCoords } from '../../services/locationService';
 import { zoneForPoint } from '../../data/meghalayaZones';
 import { GeoPoint, SKILL_CATEGORIES } from '../../types/models';
 import { useAuth } from '../../context/AuthContext';
+import { useAppConfig } from '../../context/AppConfigContext';
 import { HomeStackParamList } from '../../navigation/types';
 
 type Props = NativeStackScreenProps<HomeStackParamList, 'CreatePost'>;
@@ -42,7 +43,9 @@ type LocationState = { status: 'locating' } | { status: 'found'; coords: GeoPoin
 const MAX_PHOTOS = 6;
 
 export default function CreatePostScreen({ navigation }: Props) {
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
+  const config = useAppConfig();
+  const postingPaused = !config.allowNewPosts && !profile?.isAdmin;
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [skill, setSkill] = useState<string | null>(null);
@@ -112,6 +115,10 @@ export default function CreatePostScreen({ navigation }: Props) {
 
   const handlePost = async () => {
     if (!user) return;
+    if (postingPaused) {
+      Alert.alert('Posting is paused', 'New job posts are temporarily turned off. Please try again later.');
+      return;
+    }
     if (!title.trim() || !description.trim() || !skill) {
       Alert.alert('Missing info', 'Please add a title, description, and pick a category.');
       return;
@@ -158,6 +165,12 @@ export default function CreatePostScreen({ navigation }: Props) {
   return (
     <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
       <Text style={styles.intro}>Tell nearby pros what you need. Your job appears on the feed and on the Explore map.</Text>
+      {postingPaused ? (
+        <View style={styles.paused}>
+          <AppIcon name="bell" size={16} color={Colors.text} />
+          <Text style={styles.pausedText}>New job posts are temporarily paused by the GYC team.</Text>
+        </View>
+      ) : null}
 
       <Card style={styles.section}>
         <TextField label="What do you need help with?" placeholder="e.g. Need an electrician today" value={title} onChangeText={setTitle} />
@@ -254,7 +267,7 @@ export default function CreatePostScreen({ navigation }: Props) {
         icon="arrowRight"
         onPress={handlePost}
         loading={submitting && !uploadingPhotos}
-        disabled={submitting}
+        disabled={submitting || postingPaused}
         style={styles.submit}
       />
     </ScrollView>
@@ -268,6 +281,8 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.background,
     flexGrow: 1,
   },
+  paused: { flexDirection: 'row', alignItems: 'center', gap: 10, marginTop: Spacing.md, padding: 12, borderRadius: 14, backgroundColor: '#F1F5F9' },
+  pausedText: { flex: 1, color: Colors.text, fontFamily: Fonts.bodySemibold, fontSize: 13 },
   intro: { fontFamily: Fonts.body, fontSize: 14, lineHeight: 20, color: Colors.textLight },
   section: { marginTop: Spacing.md },
   flex: { flex: 1 },

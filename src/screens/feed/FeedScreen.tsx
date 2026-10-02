@@ -19,6 +19,8 @@ import JobCard from '../../components/home/JobCard';
 import HomeEmptyState from '../../components/home/HomeEmptyState';
 import HomeSkeleton from '../../components/home/HomeSkeleton';
 import LiveMapCard, { MapTeaserPin } from '../../components/home/LiveMapCard';
+import AnnouncementBanner from '../../components/home/AnnouncementBanner';
+import { useAppConfig } from '../../context/AppConfigContext';
 import { categoryStyle } from '../../constants/Categories';
 import { useTabBarSpace } from '../../constants/Layout';
 import { zoneForPoint } from '../../data/meghalayaZones';
@@ -61,6 +63,7 @@ function urgent(post: FeedPost): boolean {
 
 export default function FeedScreen({ navigation }: Props) {
   const { user, profile } = useAuth();
+  const config = useAppConfig();
   const insets = useSafeAreaInsets();
   const tabBarSpace = useTabBarSpace();
   const [posts, setPosts] = useState<FeedPost[]>([]);
@@ -206,8 +209,12 @@ export default function FeedScreen({ navigation }: Props) {
             onLocationPress={() => navigation.navigate('Discover')}
             onProfilePress={() => navigation.navigate('Profile')}
             onNotificationsPress={() => goToTab('NetworkTab')}
+            onAdminPress={profile?.isAdmin ? () => navigation.navigate('AdminHome') : undefined}
             onFilterPress={() => goToTab('ExploreTab')}
           />
+          {config.announcement.active && (config.announcement.title || config.announcement.message) ? (
+            <AnnouncementBanner title={config.announcement.title} message={config.announcement.message} tone={config.announcement.tone} />
+          ) : null}
           <QuickActions
             onPostJob={() => navigation.navigate('CreatePost')}
             onFindPros={() => navigation.navigate('Discover')}

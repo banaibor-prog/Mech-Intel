@@ -215,7 +215,7 @@ export default function ProfileScreen() {
           <MarketplaceProfileContent user={publicUser} provider={provider} trust={trust} reviews={reviews} isOwner onEdit={(section) => openEditor(section)} />
 
           {profile?.isAdmin ? (
-            <Button title="Moderation queue" icon="verified" variant="dark" onPress={() => navigation.navigate('Moderation')} style={styles.adminButton} />
+            <Button title="Admin console" icon="layers" variant="dark" onPress={() => navigation.navigate('AdminHome')} style={styles.adminButton} />
           ) : null}
           <TouchableOpacity accessibilityRole="button" style={styles.signOut} onPress={signOutNow}>
             <Text style={styles.signOutText}>Sign out</Text>

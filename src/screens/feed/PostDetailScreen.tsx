@@ -142,6 +142,12 @@ export default function PostDetailScreen({ route, navigation }: Props) {
 
   return (
     <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
+      {post.hidden ? (
+        <View style={styles.hiddenNotice}>
+          <Text style={styles.hiddenTitle}>Hidden by an admin</Text>
+          <Text style={styles.hiddenText}>{post.hiddenReason || 'This job is not shown in the feed or on the map.'}</Text>
+        </View>
+      ) : null}
       <View style={styles.hero}>
         <View style={styles.band}>
           <View style={styles.bandRow}>
@@ -282,6 +288,9 @@ function Stat({ icon, value, label }: { icon: AppIconName; value: string; label:
 }
 
 const styles = StyleSheet.create({
+  hiddenNotice: { backgroundColor: Colors.errorSoft, borderRadius: 16, padding: 14, marginBottom: Spacing.md },
+  hiddenTitle: { color: Colors.error, fontFamily: Fonts.bodyBold, fontSize: 13.5 },
+  hiddenText: { color: Colors.text, fontFamily: Fonts.body, fontSize: 13, marginTop: 2 },
   container: { padding: Spacing.md, paddingBottom: Spacing.xxl, backgroundColor: Colors.background, flexGrow: 1 },
   flex: { flex: 1 },
   center: { flex: 1, backgroundColor: Colors.background, alignItems: 'center', justifyContent: 'center', padding: Spacing.lg },

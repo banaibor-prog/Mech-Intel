@@ -12,7 +12,15 @@ export type HomeStackParamList = {
   ProviderDetail: { uid: string };
   PublicProfile: { uid: string };
   Profile: undefined;
-  Moderation: undefined;
+  AdminHome: undefined;
+  AdminUsers: { filter?: 'all' | 'providers' | 'admins' | 'suspended' } | undefined;
+  AdminUser: { uid: string };
+  AdminJobs: undefined;
+  AdminBookings: undefined;
+  AdminReports: undefined;
+  AdminReviews: undefined;
+  AdminSettings: undefined;
+  AdminActivity: undefined;
 };
 
 export type ExploreStackParamList = {

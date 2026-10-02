@@ -34,6 +34,7 @@ interface WorkReference {
 
 interface TrustAction {
   type: 'report' | 'block';
+  status?: 'open' | 'resolved' | 'dismissed';
 }
 
 function emptyTrustSummary(): TrustSummary {
@@ -70,8 +71,10 @@ function computeTrustSummary(
   const onTimePayments = reviews.filter((review) => review.paymentOnTime === true).length;
   const latePayments = reviews.filter((review) => review.paymentOnTime === false).length;
   const repeatClients = new Set(reviews.map((review) => review.reviewerUid)).size;
-  const reportCount = trustActions.filter((action) => action.type === 'report').length;
-  const blockCount = trustActions.filter((action) => action.type === 'block').length;
+  // Reports an admin dismissed as unfounded no longer count against the user.
+  const counted = trustActions.filter((action) => action.status !== 'dismissed');
+  const reportCount = counted.filter((action) => action.type === 'report').length;
+  const blockCount = counted.filter((action) => action.type === 'block').length;
   const estimatedRevenue = reviews.reduce((sum, review) => sum + (review.amount ?? 0), 0);
   const lastReviewedAt = reviews.reduce<number | undefined>(
     (latest, review) => (latest ? Math.max(latest, review.createdAt) : review.createdAt),

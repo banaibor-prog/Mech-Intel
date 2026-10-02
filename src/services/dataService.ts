@@ -19,6 +19,7 @@ import {
 } from 'firebase/firestore';
 import { db } from '../config/firebase';
 import { encodeGeohash } from './locationService';
+import { getAppConfig } from './appConfigService';
 import {
   Application,
   Booking,
@@ -34,6 +35,9 @@ import {
   WorkReference,
 } from '../types/models';
 import { MOCK_PROVIDERS } from '../data/mockProviders';
+
+/** Whether the built-in sample jobs and pros should be mixed into lists (admin setting). */
+const demoContent = () => getAppConfig().showDemoContent;
 import { MOCK_POSTS } from '../data/mockPosts';
 import {
   MOCK_CUSTOMERS,
@@ -241,7 +245,7 @@ export async function listProviderCardsPage(
       Promise.all(providers.map((p) => getUserProfile(p.uid))),
       Promise.all(providers.map((p) => getTrustSummary(p.uid))),
     ]);
-    liveCards = providers.map((p, i) => ({
+    liveCards = providers.flatMap((p, i) => (owners[i]?.suspended ? [] : [{
       ...p,
       displayName: owners[i]?.displayName ?? 'Provider',
       photoURL: owners[i]?.photoURL,
@@ -250,14 +254,14 @@ export async function listProviderCardsPage(
       reviewCount: trustSummaries[i].reviewCount,
       completedJobs: trustSummaries[i].completedJobs,
       estimatedRevenue: trustSummaries[i].estimatedRevenue,
-    }));
+    }]));
     nextCursor = snap.docs.length > 0 ? snap.docs[snap.docs.length - 1] : null;
     hasMore = snap.docs.length === PROVIDER_PAGE_SIZE;
   } catch {
     // Firestore not reachable/configured yet — fall back to mock data only.
   }
 
-  const mockCards: ProviderCard[] = cursor
+  const mockCards: ProviderCard[] = cursor || !demoContent()
     ? []
     : MOCK_PROVIDERS.filter(
         (m) => !skill || skill === 'All' || m.provider.skills.includes(skill)
@@ -366,25 +370,25 @@ export async function listFeedPostsPage(
       ? query(postsRef, ...baseConstraints, orderBy('createdAt', 'desc'), startAfter(cursor), limit(POST_PAGE_SIZE))
       : query(postsRef, ...baseConstraints, orderBy('createdAt', 'desc'), limit(POST_PAGE_SIZE));
     const snap = await getDocs(q);
-    const posts = snap.docs.map((d) => ({ id: d.id, ...d.data() } as Post));
+    const posts = snap.docs.map((d) => ({ id: d.id, ...d.data() } as Post)).filter((p) => !p.hidden);
     const [authors, trustSummaries] = await Promise.all([
       Promise.all(posts.map((p) => getUserProfile(p.authorUid))),
       Promise.all(posts.map((p) => getTrustSummary(p.authorUid))),
     ]);
-    livePosts = posts.map((p, i) => ({
+    livePosts = posts.flatMap((p, i) => (authors[i]?.suspended ? [] : [{
       ...p,
       authorName: authors[i]?.displayName ?? 'User',
       authorPhotoURL: authors[i]?.photoURL,
       authorTrustScore: trustSummaries[i].trustScore,
       authorResponseBoost: trustSummaries[i].responseBoost,
-    }));
+    }]));
     nextCursor = snap.docs.length > 0 ? snap.docs[snap.docs.length - 1] : null;
     hasMore = snap.docs.length === POST_PAGE_SIZE;
   } catch {
     // Firestore not reachable/configured yet — fall back to mock data only.
   }
 
-  const mockPosts: FeedPost[] = cursor
+  const mockPosts: FeedPost[] = cursor || !demoContent()
     ? []
     : MOCK_POSTS.filter((p) => !skill || skill === 'All' || p.post.skill === skill).map((p) => ({
         ...p.post,
@@ -546,12 +550,13 @@ export async function listMapItems(): Promise<MapItem[]> {
     const snap = await getDocs(query(collection(db, 'posts'), orderBy('createdAt', 'desc'), limit(150)));
     const posts = snap.docs
       .map((d) => ({ id: d.id, ...d.data() } as Post))
-      .filter((p) => p.coords && p.createdAt >= cutoff);
+      .filter((p) => p.coords && p.createdAt >= cutoff && !p.hidden);
     const [authors, trust] = await Promise.all([
       Promise.all(posts.map((p) => getUserProfile(p.authorUid))),
       Promise.all(posts.map((p) => getTrustSummary(p.authorUid))),
     ]);
     posts.forEach((p, i) => {
+      if (authors[i]?.suspended) return;
       items.push({
         id: `job:${p.id}`,
         kind: 'job',
@@ -585,11 +590,14 @@ export async function listMapItems(): Promise<MapItem[]> {
       Promise.all(providers.map((p) => getTrustSummary(p.uid))),
     ]);
     providers.forEach((p, i) => {
+      if (owners[i]?.suspended) return;
       items.push(providerToMapItem(p, owners[i], trust[i]));
     });
   } catch {
     // As above.
   }
+
+  if (!demoContent()) return items;
 
   for (const m of MOCK_POSTS) {
     if (!m.post.coords) continue;

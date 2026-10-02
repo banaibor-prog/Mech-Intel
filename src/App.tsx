@@ -4,6 +4,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import BootSplash from 'react-native-bootsplash';
 import { AuthProvider } from './context/AuthContext';
 import { ModeProvider } from './context/ModeContext';
+import { AppConfigProvider } from './context/AppConfigContext';
 import RootNavigator from './navigation/RootNavigator';
 import { Colors } from './constants/Colors';
 
@@ -16,10 +17,12 @@ function App(): React.JSX.Element {
     <View style={{ flex: 1, backgroundColor: Colors.background }}>
       <SafeAreaProvider>
         <AuthProvider>
-          <ModeProvider>
-            <StatusBar barStyle="dark-content" />
-            <RootNavigator />
-          </ModeProvider>
+          <AppConfigProvider>
+            <ModeProvider>
+              <StatusBar barStyle="dark-content" />
+              <RootNavigator />
+            </ModeProvider>
+          </AppConfigProvider>
         </AuthProvider>
       </SafeAreaProvider>
     </View>
